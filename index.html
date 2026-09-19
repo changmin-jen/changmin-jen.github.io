@@ -1,74 +1,73 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Academic homepage of Changmin Jeon, an undergraduate researcher working on LLM alignment and inference-time scaling.">
-  <title>Changmin Jeon | Academic Homepage</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231d3557'/%3E%3Cpath d='M18 18h28v7H27v10h16v7H27v4h19v7H18z' fill='white'/%3E%3C/svg%3E">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Academic homepage of Changmin Jeon.">
+  <meta name="author" content="Changmin Jeon">
+  <title>Changmin Jeon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Noto+Serif+KR:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="#top">Changmin Jeon</a>
-    <nav aria-label="Primary navigation">
-      <a href="#about">About</a><a href="#research">Research</a><a href="#experience">Experience</a><a href="#education">Education</a>
-    </nav>
-  </header>
-
-  <main id="top">
-    <section class="intro" aria-labelledby="name">
-      <img class="portrait" src="profile.png" alt="Portrait of Changmin Jeon">
-      <div>
-        <p class="eyebrow">Undergraduate Researcher · AI</p>
-        <h1 id="name">Changmin Jeon <span>전창민</span></h1>
-        <p class="role">B.S. Student in Electronics &amp; Computer Engineering<br>Seokyeong University</p>
-        <div class="links" aria-label="Contact links">
-          <a href="mailto:ckdals560@gmail.com">Email</a>
-          <a href="https://github.com/changmin-jen" target="_blank" rel="noreferrer">GitHub</a>
+  <main class="container">
+    <section class="profile">
+      <img src="profile.png" alt="Changmin Jeon">
+      <div class="meta">
+        <div class="name">Changmin Jeon (전창민)</div>
+        <div class="affil">
+          B.S. Student in Electronics &amp; Computer Engineering<br>
+          Seokyeong University<br>
+          <span class="email-text">ckdals560 [at] gmail [dot] com</span>
+        </div>
+        <div class="links">
+          <a href="mailto:ckdals560@gmail.com">Email</a> /
+          <a href="https://github.com/changmin-jen">GitHub</a>
         </div>
       </div>
     </section>
 
-    <section id="about">
-      <h2>About Me</h2>
-      <p>I am an undergraduate student in Electronics &amp; Computer Engineering at Seokyeong University. My research focuses on reliable post-training and inference-time methods for large language models, with particular interest in reinforcement learning, reward overoptimization, and test-time alignment.</p>
-      <p>I am interested in understanding how language models can make better decisions under imperfect reward signals and limited inference budgets.</p>
-      <div class="chips" aria-label="Research interests">
-        <span>LLM Alignment</span><span>Reinforcement Learning</span><span>Inference-Time Scaling</span><span>Reward Overoptimization</span><span>Offline RL</span>
-      </div>
-    </section>
+    <p>I am an undergraduate student in <strong>Electronics &amp; Computer Engineering</strong> at <a href="https://www.skuniv.ac.kr/">Seokyeong University</a>.</p>
 
-    <section id="research">
-      <h2>Research &amp; Projects</h2>
-      <article class="item">
-        <div class="year">2026</div>
-        <div><h3>Inference-Time Alignment under Imperfect Rewards</h3><p>Studying Best-of-N sampling, regularized inference, and pessimistic objectives to characterize and mitigate reward hacking at inference time.</p></div>
-      </article>
-      <article class="item">
-        <div class="year">2026</div>
-        <div><h3>Sequential Sampling for Language Models</h3><p>Reproducing and analyzing value-guided backtracking, rejection sampling, and particle filtering, with emphasis on target-distribution fidelity, diversity, and computational cost.</p></div>
-      </article>
-      <article class="item">
-        <div class="year">2026</div>
-        <div><h3>Robust Reward Modeling</h3><p>Exploring uncertainty-aware and distributionally robust reward objectives for reliable LLM alignment.</p></div>
-      </article>
-    </section>
+    <p>I am currently an undergraduate researcher at <strong>RACS</strong>. My research interests lie in <strong>reinforcement learning</strong>, <strong>LLM alignment</strong>, and <strong>inference-time scaling</strong>. I am particularly interested in reliable alignment under imperfect reward models, including reward overoptimization, test-time alignment, and uncertainty-aware reward modeling.</p>
 
-    <section id="experience">
-      <h2>Experience</h2>
-      <article class="item"><div class="year">2026</div><div><h3>Research Intern · POSTECH Interactive Machine Learning Lab</h3><p>Research on test-time scaling, offline reinforcement learning, and reliable alignment with verifiable rewards.</p></div></article>
-      <article class="item"><div class="year">Present</div><div><h3>Undergraduate Researcher · RACS</h3><p>Research and seminar activities in machine learning, multimodal learning, and language model alignment.</p></div></article>
-      <article class="item"><div class="year">2026</div><div><h3>Data Intern · University Evaluation Institute</h3><p>Collected and refined institutional data and contributed to building a retrieval-augmented generation database.</p></div></article>
-    </section>
+    <h2>News</h2>
+    <div class="news">
+      <table>
+        <tr><td class="date">2026</td><td>Joined POSTECH Interactive Machine Learning Lab as a research intern.</td></tr>
+        <tr><td class="date">2026</td><td>Started research on inference-time alignment and reward overoptimization.</td></tr>
+      </table>
+    </div>
 
-    <section id="education">
-      <h2>Education</h2>
-      <article class="item"><div class="year">Expected 2027</div><div><h3>Seokyeong University</h3><p>B.S. in Electronics &amp; Computer Engineering, AI Track</p></div></article>
-    </section>
+    <h2>Research &amp; Projects</h2>
+    <table class="research">
+      <tr>
+        <td class="thumb"><div class="placeholder">LLM Alignment</div></td>
+        <td><div class="title">Inference-Time Alignment under Imperfect Rewards</div><div class="desc">Studying Best-of-N sampling, regularized inference, and pessimistic objectives to understand and mitigate reward hacking at inference time.</div><div class="tags">LLM Alignment · Reward Overoptimization · Test-Time Scaling</div></td>
+      </tr>
+      <tr>
+        <td class="thumb"><div class="placeholder">Sampling</div></td>
+        <td><div class="title">Sequential Sampling for Language Models</div><div class="desc">Reproducing and analyzing value-guided backtracking, rejection sampling, and particle filtering with respect to target-distribution fidelity, diversity, and computational cost.</div><div class="tags">VGB · Rejection Sampling · Particle Filtering</div></td>
+      </tr>
+      <tr>
+        <td class="thumb"><div class="placeholder">Reward Models</div></td>
+        <td><div class="title">Robust Reward Modeling</div><div class="desc">Exploring uncertainty-aware and distributionally robust reward objectives for reliable language model alignment.</div><div class="tags">Uncertainty · Distributional Robustness · RLHF</div></td>
+      </tr>
+    </table>
+
+    <h2>Experience</h2>
+    <ul>
+      <li><strong>POSTECH Interactive Machine Learning Lab</strong>, Research Intern (2026)</li>
+      <li><strong>RACS</strong>, Undergraduate Researcher</li>
+      <li><strong>University Evaluation Institute</strong>, Data Intern (2026)</li>
+    </ul>
+
+    <h2>Education</h2>
+    <ul><li><strong>Seokyeong University</strong>, B.S. in Electronics &amp; Computer Engineering, AI Track</li></ul>
   </main>
-
-  <footer><span>© <span id="year"></span> Changmin Jeon</span><a href="mailto:ckdals560@gmail.com">ckdals560@gmail.com</a></footer>
-  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  <footer><small>Last updated: September 2026</small></footer>
 </body>
 </html>
