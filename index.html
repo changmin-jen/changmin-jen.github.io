@@ -9,33 +9,64 @@
   <title>Changmin Jeon</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Noto+Serif+KR:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    html{box-sizing:border-box}*,*:before,*:after{box-sizing:inherit}body{font-family:"EB Garamond","Georgia","Times New Roman","Noto Serif KR",serif;font-size:18px;color:#222;background:#fff;line-height:1.55;margin:0;padding:0}.container{max-width:800px;margin:0 auto;padding:40px 24px 24px}a{color:#1772d0;text-decoration:none}a:hover{color:#f09228;text-decoration:underline}h2{font-size:20px;margin:36px 0 12px;font-weight:500;border-bottom:1px solid #e6e6e6;padding-bottom:4px}p{margin:8px 0}.profile{display:grid;grid-template-columns:200px 1fr;gap:28px;align-items:start;margin-bottom:8px}.profile img{display:block;width:200px!important;height:200px!important;max-width:200px!important;object-fit:cover;object-position:50% 20%;border-radius:4px;background:#f4f4f4}.profile .meta{font-size:15px}.profile .name{font-size:28px;font-weight:500;margin-bottom:6px}.profile .affil{color:#555;margin-bottom:12px}.email-text{font-size:13px}.profile .links a{margin-right:10px}.news{max-height:220px;overflow-y:auto;border:1px solid #eee;padding:8px 12px;font-size:14px}.news table{border-collapse:collapse;width:100%}.news td{padding:4px 6px;vertical-align:top}.news td.date{white-space:nowrap;color:#555;width:90px}.research{width:100%;border-collapse:collapse}.research td{padding:16px 8px;vertical-align:top;border-bottom:1px solid #f0f0f0}.research td.thumb{width:180px}.research .placeholder{width:160px;height:100px;background:#f4f4f4;border:1px solid #eee;border-radius:3px;display:flex;align-items:center;justify-content:center;color:#999;font-size:13px}.research .title{font-weight:600;color:#111;font-size:16px}.research .desc{font-size:14.5px;color:#333;margin-top:4px}.research .tags{font-size:13px;color:#777;margin-top:6px}ul{margin:8px 0;padding-left:24px}li{margin:6px 0}footer{max-width:800px;margin:40px auto 24px;padding:12px 24px 0;border-top:1px solid #eee;color:#888;text-align:right}footer small{font-size:12px}@media(max-width:600px){body{font-size:17px}.container{padding-top:28px}.profile{grid-template-columns:1fr}.profile img{width:160px!important;height:160px!important;max-width:160px!important}.research td.thumb{width:110px}.research .placeholder{width:100px;height:70px;font-size:11px}}
+    * { box-sizing: border-box; }
+    html { scroll-padding-top: 24px; }
+    body { margin: 0; background: #fff; color: #111; font-family: Lato, Verdana, Helvetica, sans-serif; font-size: 14px; line-height: 1.45; }
+    a { color: #356aa0; text-decoration: none; }
+    a:hover { color: #b36922; text-decoration: underline; }
+    a:focus-visible { outline: 2px solid #356aa0; outline-offset: 4px; }
+    .skip { position: absolute; top: -80px; left: 20px; background: white; padding: 8px; }
+    .skip:focus { top: 8px; }
+    .container { max-width: 840px; margin: 0 auto; padding: 40px 24px 20px; }
+    .intro { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 40px; align-items: center; }
+    h1 { text-align: center; font-size: 32px; line-height: 1.2; font-weight: 400; margin: 0 0 20px; }
+    h1 span { display: block; font-size: 14px; color: #555; margin-top: 8px; }
+    p { margin: 0 0 14px; }
+    strong { font-weight: 700; }
+    .portrait { width: 230px; height: 230px; border-radius: 50%; object-fit: cover; object-position: 50% 20%; }
+    .contact { text-align: center; margin: 18px 0 0; }
+    .contact span { margin: 0 7px; }
+    h2 { font-size: 22px; font-weight: 400; margin: 0 0 20px; }
+    .section { margin-top: 44px; }
+    .news table { width: 100%; border-collapse: collapse; }
+    .news td { padding: 3px 0; vertical-align: top; }
+    .news .date { width: 56px; font-weight: 700; }
+    .project { margin: 0 0 25px; }
+    .project:last-child { margin-bottom: 0; }
+    .title { font-size: 14px; line-height: 1.45; font-weight: 700; margin: 0 0 5px; }
+    .desc { color: #222; }
+    .tags { font-size: 12px; color: #666; margin-top: 5px; }
+    .section ul { list-style: none; padding: 0; margin: 0; }
+    .section li { margin-bottom: 18px; }
+    .section li strong { display: block; margin-bottom: 3px; }
+    footer { max-width: 840px; margin: 0 auto; padding: 20px 24px 30px; color: #777; text-align: right; }
+    footer small { font-size: 11px; }
+    @media (max-width: 620px) {
+      .container { padding: 28px 22px 16px; }
+      .intro { display: flex; flex-direction: column-reverse; gap: 24px; }
+      .portrait { width: 160px; height: 160px; }
+      h1 { font-size: 28px; margin-bottom: 20px; }
+      .section { margin-top: 34px; }
+      footer { padding: 12px 22px 24px; }
+    }
   </style>
 </head>
 <body>
+  <a class="skip" href="#about">Skip to content</a>
   <main class="container">
-    <section class="profile">
-      <img src="profile.png" alt="Changmin Jeon">
-      <div class="meta">
-        <div class="name">Changmin Jeon (전창민)</div>
-        <div class="affil">
-          B.S. Student in Electronics &amp; Computer Engineering<br>
-          Seokyeong University<br>
-          <span class="email-text">ckdals560 [at] gmail [dot] com</span>
-        </div>
-        <div class="links">
-          <a href="mailto:ckdals560@gmail.com">Email</a> /
-          <a href="https://github.com/changmin-jen">GitHub</a>
-        </div>
+        <header class="intro" id="about">
+      <div class="bio">
+        <h1>Changmin Jeon <span lang="ko">전창민</span></h1>
+        <p>I am an undergraduate student in <strong>Electronics &amp; Computer Engineering</strong> at <a href="https://www.skuniv.ac.kr/">Seokyeong University</a>.</p>
+        <p>I am currently an undergraduate researcher at <strong>RACS</strong>. My research interests lie in <strong>reinforcement learning</strong>, <strong>LLM alignment</strong>, and <strong>inference-time scaling</strong>. I am particularly interested in reliable alignment under imperfect reward models, including reward overoptimization, test-time alignment, and uncertainty-aware reward modeling.</p>
+        <p class="contact"><a href="mailto:ckdals560@gmail.com">Email</a><span aria-hidden="true"> / </span><a href="https://github.com/changmin-jen">GitHub</a></p>
       </div>
-    </section>
-
-    <p>I am an undergraduate student in <strong>Electronics &amp; Computer Engineering</strong> at <a href="https://www.skuniv.ac.kr/">Seokyeong University</a>.</p>
-
-    <p>I am currently an undergraduate researcher at <strong>RACS</strong>. My research interests lie in <strong>reinforcement learning</strong>, <strong>LLM alignment</strong>, and <strong>inference-time scaling</strong>. I am particularly interested in reliable alignment under imperfect reward models, including reward overoptimization, test-time alignment, and uncertainty-aware reward modeling.</p>
-
+      <img class="portrait" src="profile.png" alt="Changmin Jeon" width="230" height="230">
+    </header>
+    <div class="content">
+    <section class="section" id="news">
     <h2>News</h2>
     <div class="news">
       <table>
@@ -44,31 +75,30 @@
       </table>
     </div>
 
-    <h2>Research &amp; Projects</h2>
-    <table class="research">
-      <tr>
-        <td class="thumb"><div class="placeholder">LLM Alignment</div></td>
-        <td><div class="title">Inference-Time Alignment under Imperfect Rewards</div><div class="desc">Studying Best-of-N sampling, regularized inference, and pessimistic objectives to understand and mitigate reward hacking at inference time.</div><div class="tags">LLM Alignment · Reward Overoptimization · Test-Time Scaling</div></td>
-      </tr>
-      <tr>
-        <td class="thumb"><div class="placeholder">Sampling</div></td>
-        <td><div class="title">Sequential Sampling for Language Models</div><div class="desc">Reproducing and analyzing value-guided backtracking, rejection sampling, and particle filtering with respect to target-distribution fidelity, diversity, and computational cost.</div><div class="tags">VGB · Rejection Sampling · Particle Filtering</div></td>
-      </tr>
-      <tr>
-        <td class="thumb"><div class="placeholder">Reward Models</div></td>
-        <td><div class="title">Robust Reward Modeling</div><div class="desc">Exploring uncertainty-aware and distributionally robust reward objectives for reliable language model alignment.</div><div class="tags">Uncertainty · Distributional Robustness · RLHF</div></td>
-      </tr>
-    </table>
+    </section>
+    <section class="section" id="research">
+    <h2>Research &amp; projects</h2>
+    <div class="research">
+      <article class="project"><h3 class="title">Inference-Time Alignment under Imperfect Rewards</h3><div class="desc">Studying Best-of-N sampling, regularized inference, and pessimistic objectives to understand and mitigate reward hacking at inference time.</div><div class="tags">LLM Alignment · Reward Overoptimization · Test-Time Scaling</div></article>
+      <article class="project"><h3 class="title">Sequential Sampling for Language Models</h3><div class="desc">Reproducing and analyzing value-guided backtracking, rejection sampling, and particle filtering with respect to target-distribution fidelity, diversity, and computational cost.</div><div class="tags">VGB · Rejection Sampling · Particle Filtering</div></article>
+      <article class="project"><h3 class="title">Robust Reward Modeling</h3><div class="desc">Exploring uncertainty-aware and distributionally robust reward objectives for reliable language model alignment.</div><div class="tags">Uncertainty · Distributional Robustness · RLHF</div></article>
+    </div>
 
+    </section>
+    <section class="section" id="experience">
     <h2>Experience</h2>
     <ul>
-      <li><strong>POSTECH Interactive Machine Learning Lab</strong>, Research Intern (2026)</li>
-      <li><strong>RACS</strong>, Undergraduate Researcher</li>
-      <li><strong>University Evaluation Institute</strong>, Data Intern (2026)</li>
+      <li><strong>POSTECH Interactive Machine Learning Lab</strong> Research Intern (2026)</li>
+      <li><strong>RACS</strong> Undergraduate Researcher</li>
+      <li><strong>University Evaluation Institute</strong> Data Intern (2026)</li>
     </ul>
 
+    </section>
+    <section class="section" id="education">
     <h2>Education</h2>
-    <ul><li><strong>Seokyeong University</strong>, B.S. in Electronics &amp; Computer Engineering, AI Track</li></ul>
+    <ul><li><strong>Seokyeong University</strong> B.S. in Electronics &amp; Computer Engineering, AI Track</li></ul>
+    </section>
+    </div>
   </main>
   <footer><small>Last updated: September 2026</small></footer>
 </body>
