@@ -2,104 +2,179 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Academic homepage of Changmin Jeon.">
-  <meta name="author" content="Changmin Jeon">
+  <meta name="description" content="Changmin Jeon — reinforcement learning, language model alignment, and inference-time scaling.">
   <title>Changmin Jeon</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
-    html { scroll-padding-top: 24px; }
-    body { margin: 0; background: #fff; color: #111; font-family: Lato, Verdana, Helvetica, sans-serif; font-size: 14px; line-height: 1.45; }
-    a { color: #356aa0; text-decoration: none; }
-    a:hover { color: #b36922; text-decoration: underline; }
-    a:focus-visible { outline: 2px solid #356aa0; outline-offset: 4px; }
-    .skip { position: absolute; top: -80px; left: 20px; background: white; padding: 8px; }
-    .skip:focus { top: 8px; }
-    .container { max-width: 840px; margin: 0 auto; padding: 40px 24px 20px; }
-    .intro { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 40px; align-items: center; }
-    h1 { text-align: center; font-size: 32px; line-height: 1.2; font-weight: 400; margin: 0 0 20px; }
-    h1 span { display: block; font-size: 14px; color: #555; margin-top: 8px; }
-    p { margin: 0 0 14px; }
-    strong { font-weight: 700; }
-    .portrait { width: 230px; height: 230px; border-radius: 50%; object-fit: cover; object-position: 50% 20%; }
-    .contact { text-align: center; margin: 18px 0 0; }
-    .contact span { margin: 0 7px; }
-    h2 { font-size: 22px; font-weight: 400; margin: 0 0 20px; }
-    .section { margin-top: 44px; }
-    .news table { width: 100%; border-collapse: collapse; }
-    .news td { padding: 3px 0; vertical-align: top; }
-    .news .date { width: 56px; font-weight: 700; }
-    .project { margin: 0 0 25px; }
-    .project:last-child { margin-bottom: 0; }
-    .title { font-size: 14px; line-height: 1.45; font-weight: 700; margin: 0 0 5px; }
-    .desc { color: #222; }
-    .tags { font-size: 12px; color: #666; margin-top: 5px; }
-    .section ul { list-style: none; padding: 0; margin: 0; }
-    .section li { margin-bottom: 18px; }
-    .section li strong { display: block; margin-bottom: 3px; }
-    footer { max-width: 840px; margin: 0 auto; padding: 20px 24px 30px; color: #777; text-align: right; }
-    footer small { font-size: 11px; }
-    @media (max-width: 620px) {
-      .container { padding: 28px 22px 16px; }
-      .intro { display: flex; flex-direction: column-reverse; gap: 24px; }
-      .portrait { width: 160px; height: 160px; }
-      h1 { font-size: 28px; margin-bottom: 20px; }
-      .section { margin-top: 34px; }
-      footer { padding: 12px 22px 24px; }
-    }
-  </style>
+:root { --ink:#111; --muted:#626262; --accent:#444d87; --line:#ddd; --soft:#f6f7f9; }
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top:88px; }
+body { margin:0; color:var(--ink); background:#fff; font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+a { color:var(--accent); text-underline-offset:3px; }
+a:hover { color:#222a61; }
+a:focus-visible,summary:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
+.skip { position:absolute; left:12px; top:-80px; z-index:10; background:#fff; padding:8px 14px; }
+.skip:focus { top:8px; }
+.wrap { width:min(860px,calc(100% - 40px)); margin-inline:auto; }
+.topbar { border-bottom:1px solid #e5e5e5; background:#fff; position:sticky; top:0; z-index:5; }
+.nav-row { min-height:54px; display:flex; justify-content:space-between; align-items:center; gap:24px; }
+.brand { color:#111; text-decoration:none; font-weight:700; white-space:nowrap; }
+nav { display:flex; gap:18px; flex-wrap:wrap; }
+nav a { font-size:14px; text-decoration:none; color:var(--muted); }
+nav a:hover { color:var(--accent); text-decoration:underline; }
+.hero { display:grid; grid-template-columns:minmax(0,1fr) 178px; gap:34px; align-items:start; padding:32px 0 36px; }
+h1 { font-size:38px; line-height:1.2; margin:0 0 10px; letter-spacing:-1px; }
+.role { color:#555; font-size:14px; font-weight:650; letter-spacing:.6px; text-transform:uppercase; margin:0 0 12px; }
+p { margin:0 0 14px; }
+.hero p:last-child { margin-bottom:0; }
+.portrait { width:178px; height:238px; object-fit:cover; object-position:50% 20%; }
+.social { display:flex; gap:18px; flex-wrap:wrap; margin-top:16px; font-weight:600; }
+section { border-top:1px solid var(--line); padding:24px 0 30px; }
+h2 { font-size:22px; line-height:1.4; margin:0 0 18px; }
+h3 { font-size:17px; line-height:1.4; margin:0 0 8px; }
+.section-intro { display:grid; grid-template-columns:160px 1fr; gap:24px; margin-bottom:18px; }
+.section-intro p { color:var(--muted); margin:0; }
+.cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.card { border:1px solid var(--line); background:var(--soft); padding:20px 18px; display:flex; flex-direction:column; }
+.number { font-size:12px; font-weight:750; color:var(--accent); margin-bottom:10px; }
+.card p { font-size:14px; color:var(--muted); line-height:1.65; }
+.card a { font-size:13px; margin-top:auto; }
+.project-list { margin:0; padding-left:25px; }
+.project-list>li { padding:0 0 20px 5px; margin-bottom:20px; border-bottom:1px solid #e9e9e9; }
+.project-list>li:last-child { border-bottom:0; margin-bottom:0; padding-bottom:0; }
+.project-list h3 { font-size:16px; margin-bottom:5px; }
+.meta { color:var(--muted); font-size:14px; margin-bottom:7px; }
+summary { cursor:pointer; color:var(--accent); font-size:14px; width:fit-content; }
+details[open] summary { margin-bottom:10px; }
+.summary-body { background:var(--soft); border-left:2px solid #c7cce0; padding:14px 18px; margin-top:10px; color:#444; font-size:14px; }
+.summary-body p { margin:0; }
+.paper-figure { margin:18px 0 0; padding:16px; background:#fff; border:1px solid var(--line); }
+.paper-figure a { display:block; width:fit-content; max-width:100%; margin:auto; }
+.paper-figure img { display:block; width:100%; max-width:540px; height:auto; margin:auto; }
+.paper-figure figcaption { margin-top:14px; color:var(--muted); font-size:13px; line-height:1.5; text-align:center; }
+.timeline { margin:0; }
+.timeline>div { display:grid; grid-template-columns:165px 1fr; gap:18px; padding:7px 0; }
+dt { color:var(--muted); font-size:14px; }
+dd { margin:0; }
+.background-group { margin-top:24px; }
+.background-group:first-of-type { margin-top:0; }
+.background-group h3 { margin-bottom:12px; }
+.subtext { display:block; color:var(--muted); font-size:14px; }
+.contact-copy { margin:0; overflow-wrap:anywhere; }
+footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; padding:20px 0 30px; }
+.footer-row { display:flex; justify-content:space-between; gap:20px; }
+@media(max-width:680px) {
+ html { scroll-padding-top:120px; }
+ .nav-row { flex-direction:column; align-items:flex-start; gap:8px; padding:12px 0; }
+ nav { gap:10px 18px; }
+ nav a { font-size:13px; }
+ .hero { grid-template-columns:minmax(0,1fr) 112px; gap:20px; padding-top:26px; }
+ .portrait { width:112px; height:150px; }
+ h1 { font-size:30px; letter-spacing:-.6px; }
+ .role { font-size:12px; }
+ .hero p { font-size:14px; }
+ .cards { grid-template-columns:1fr; }
+ .section-intro { grid-template-columns:1fr; gap:0; }
+ .section-intro h2 { margin-bottom:10px; }
+ .timeline>div { grid-template-columns:110px 1fr; gap:14px; }
+ .footer-row { flex-direction:column; gap:5px; }
+}
+@media(max-width:420px) {
+ .hero { grid-template-columns:1fr; }
+ .portrait { grid-row:1; width:110px; height:145px; }
+}
+@media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+</style>
 </head>
-<body>
-  <a class="skip" href="#about">Skip to content</a>
-  <main class="container">
-        <header class="intro" id="about">
-      <div class="bio">
-        <h1>Changmin Jeon <span lang="ko">전창민</span></h1>
-        <p>I am an undergraduate student in <strong>Electronics &amp; Computer Engineering</strong> at <a href="https://www.skuniv.ac.kr/">Seokyeong University</a>.</p>
-        <p>I am currently an undergraduate researcher at <strong>RACS</strong>. My research interests lie in <strong>reinforcement learning</strong>, <strong>LLM alignment</strong>, and <strong>inference-time scaling</strong>. I am particularly interested in reliable alignment under imperfect reward models, including reward overoptimization, test-time alignment, and uncertainty-aware reward modeling.</p>
-        <p class="contact"><a href="mailto:ckdals560@gmail.com">Email</a><span aria-hidden="true"> / </span><a href="https://github.com/changmin-jen">GitHub</a></p>
-      </div>
-      <img class="portrait" src="profile.png" alt="Changmin Jeon" width="230" height="230">
-    </header>
-    <div class="content">
-    <section class="section" id="news">
-    <h2>News</h2>
-    <div class="news">
-      <table>
-        <tr><td class="date">2026</td><td>Joined POSTECH Interactive Machine Learning Lab as a research intern.</td></tr>
-        <tr><td class="date">2026</td><td>Started research on inference-time alignment and reward overoptimization.</td></tr>
-      </table>
+<body id="top">
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="wrap nav-row">
+    <a class="brand" href="#top">Changmin Jeon</a>
+    <nav aria-label="Primary navigation">
+      <a href="#research">Research</a><a href="#publications">Publications</a><a href="#projects">Projects</a><a href="#updates">Updates</a><a href="#background">Background</a><a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+<main id="main" class="wrap">
+  <!-- PROFILE: edit your name, affiliation and introduction here. -->
+  <div class="hero">
+    <div>
+      <h1>Changmin Jeon</h1>
+      <p class="role">Undergraduate student at Seokyeong University</p>
+      <p>I am an undergraduate student in Electronics &amp; Computer Engineering at <a href="https://www.skuniv.ac.kr/">Seokyeong University</a>, and an undergraduate researcher at RACS.</p>
+      <p>I am interested in making language models more reliable and computationally efficient at inference time.</p>
+      <div class="social"><a href="mailto:ckdals560@gmail.com">Email</a><a href="https://github.com/changmin-jen">GitHub</a></div>
     </div>
-
-    </section>
-    <section class="section" id="research">
-    <h2>Research &amp; projects</h2>
-    <div class="research">
-      <article class="project"><h3 class="title">Inference-Time Alignment under Imperfect Rewards</h3><div class="desc">Studying Best-of-N sampling, regularized inference, and pessimistic objectives to understand and mitigate reward hacking at inference time.</div><div class="tags">LLM Alignment · Reward Overoptimization · Test-Time Scaling</div></article>
-      <article class="project"><h3 class="title">Sequential Sampling for Language Models</h3><div class="desc">Reproducing and analyzing value-guided backtracking, rejection sampling, and particle filtering with respect to target-distribution fidelity, diversity, and computational cost.</div><div class="tags">VGB · Rejection Sampling · Particle Filtering</div></article>
-      <article class="project"><h3 class="title">Robust Reward Modeling</h3><div class="desc">Exploring uncertainty-aware and distributionally robust reward objectives for reliable language model alignment.</div><div class="tags">Uncertainty · Distributional Robustness · RLHF</div></article>
+    <img class="portrait" src="profile.png" alt="Changmin Jeon" width="178" height="238">
+  </div>
+  <section id="research" aria-labelledby="research-heading">
+    <div class="section-intro"><h2 id="research-heading">Research</h2><p>My work focuses on sampling and regularization methods for more reliable inference-time alignment.</p></div>
+    <div class="cards"><article class="card"><span class="number">01</span><h3>Reward Hacking Mitigation</h3><p>Comparing regularization strategies to mitigate reward hacking in Best-of-N sampling.</p><a href="#project-1">Ongoing project</a></article>
+<article class="card"><span class="number">02</span><h3>Inference-Time Alignment</h3><p>Reproducing Value-Guided Backtracking for language model generation.</p><a href="#project-2">Reproduction project</a></article></div>
+  </section>
+  <!-- PUBLICATIONS: Changmin Jeon is the confirmed first author. Add the full coauthor list before release. -->
+  <section id="publications" aria-labelledby="publications-heading">
+    <h2 id="publications-heading">Publications</h2>
+    <ol class="project-list">
+      <li id="pub-clickbait">
+        <h3>Attention-based Pairwise Semantic Fusion for YouTube Clickbait Detection</h3>
+        <p class="meta"><strong>Changmin Jeon</strong> · First author</p><p class="meta">Manuscript · Public release forthcoming</p>
+        <details><summary>Summary &amp; figure</summary><div class="summary-body"><p>A multimodal framework for detecting semantic mismatches between YouTube titles and thumbnails and the actual video content. It combines titles, ASR transcripts, and captions of thumbnails and keyframes using Sentence-BERT embeddings and attention-based pairwise fusion.</p>
+          <figure class="paper-figure">
+            <a href="figures/clickbait-framework.png" target="_blank" rel="noopener" aria-label="Open framework figure at original size in a new tab">
+              <img src="figures/clickbait-framework.png" alt="Title, STT, thumbnail and keyframe representations pass through attention pooling into four pairwise branches, each processed by an MLP and combined into a fused representation." loading="lazy">
+            </a>
+            <figcaption>Overview of the proposed Pairwise-Semantic Fusion architecture. Click the figure to view the original image.</figcaption>
+          </figure>
+        </div></details>
+      </li>
+    </ol>
+  </section>
+  <!-- PROJECTS -->
+  <section id="projects" aria-labelledby="projects-heading">
+    <h2 id="projects-heading">Research Projects</h2>
+    <ol class="project-list"><!-- PROJECT 1: edit the title, topics and summary below. -->
+<li id="project-1">
+  <h3>Regularization for Best-of-N Reward Hacking</h3>
+  <p class="meta">Ongoing · Best-of-N · Regularization</p>
+  <details><summary>Research summary</summary><div class="summary-body"><p>Comparing regularization strategies for mitigating reward hacking in Best-of-N sampling. This work is ongoing.</p></div></details>
+</li>
+<!-- PROJECT 2: edit the title, topics and summary below. -->
+<li id="project-2">
+  <h3>Value-Guided Backtracking (VGB) Reproduction</h3>
+  <p class="meta">Reproduction · Value-Guided Backtracking</p>
+  <details><summary>Research summary</summary><div class="summary-body"><p>Reproducing the Value-Guided Backtracking (VGB) method for language model generation.</p></div></details>
+</li></ol>
+  </section>
+  <!-- UPDATES: duplicate one date/description pair to add a new update. -->
+  <section id="updates" aria-labelledby="updates-heading">
+    <div class="section-intro"><h2 id="updates-heading">Recent Updates</h2><p>Research and career updates.</p></div>
+    <dl class="timeline">
+      <div><dt>Jun. 2026</dt><dd>Joined POSTECH Interactive Machine Learning Lab as a research intern.</dd></div>
+      <div><dt>2026</dt><dd>Started comparing regularization strategies for mitigating reward hacking in Best-of-N sampling.</dd></div>
+    </dl>
+  </section>
+  <section id="background" aria-labelledby="background-heading">
+    <h2 id="background-heading">Background</h2>
+    <div class="background-group"><h3>Education</h3>
+      <p><a href="https://www.skuniv.ac.kr/">Seokyeong University</a><span class="subtext">B.S. in Electronics &amp; Computer Engineering, AI Track</span></p>
     </div>
-
-    </section>
-    <section class="section" id="experience">
-    <h2>Experience</h2>
-    <ul>
-      <li><strong>POSTECH Interactive Machine Learning Lab</strong> Research Intern (2026)</li>
-      <li><strong>RACS</strong> Undergraduate Researcher</li>
-      <li><strong>University Evaluation Institute</strong> Data Intern (2026)</li>
-    </ul>
-
-    </section>
-    <section class="section" id="education">
-    <h2>Education</h2>
-    <ul><li><strong>Seokyeong University</strong> B.S. in Electronics &amp; Computer Engineering, AI Track</li></ul>
-    </section>
+    <div class="background-group"><h3>Research Experience</h3>
+      <dl class="timeline">
+        <div><dt>Jun. – Sep. 2026</dt><dd>POSTECH Interactive Machine Learning Lab<span class="subtext">Research Intern</span></dd></div>
+        <div><dt>Mar. 2025 – Present</dt><dd>Robot and Control System (RACS), Seokyeong University<span class="subtext">Research Student · Korea</span><span class="subtext">Paper review seminar</span></dd></div>
+      </dl>
     </div>
-  </main>
-  <footer><small>Last updated: September 2026</small></footer>
+    <div class="background-group"><h3>Internships</h3>
+      <dl class="timeline"><div><dt>Jul. 2025 – Mar. 2026</dt><dd>AI Consulting Center, Institute of University Evaluation<span class="subtext">Research Intern · Korea</span><span class="subtext">RAG database construction and data preprocessing for an AI chatbot solution</span></dd></div></dl>
+    </div>
+  </section>
+  <section id="contact" aria-labelledby="contact-heading">
+    <h2 id="contact-heading">Contact</h2>
+    <p class="contact-copy">For research discussions or collaboration, email me at <a href="mailto:ckdals560@gmail.com">ckdals560@gmail.com</a>.</p>
+  </section>
+</main>
+<footer><div class="wrap footer-row"><span>© 2026 Changmin Jeon</span><span>Last updated October 2026</span></div></footer>
 </body>
 </html>
