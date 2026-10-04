@@ -52,6 +52,7 @@ summary { cursor:pointer; color:var(--accent); font-size:14px; width:fit-content
 details[open] summary { margin-bottom:10px; }
 .summary-body { background:var(--soft); border-left:2px solid #c7cce0; padding:14px 18px; margin-top:10px; color:#444; font-size:14px; }
 .summary-body p { margin:0; }
+.summary-goals { margin:10px 0 0; padding-left:20px; display:grid; gap:6px; }
 .paper-figure { margin:18px 0 0; padding:16px; background:#fff; border:1px solid var(--line); }
 .paper-figure a { display:block; width:fit-content; max-width:100%; margin:auto; }
 .paper-figure img { display:block; width:100%; max-width:380px; height:auto; margin:auto; }
@@ -139,9 +140,15 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
     <h2 id="projects-heading">Research Projects</h2>
     <ol class="project-list"><!-- PROJECT 1: edit the title, topics and summary below. -->
 <li id="project-1">
-  <h3>Regularization for Best-of-N Reward Hacking</h3>
-  <p class="meta">Ongoing · Best-of-N · Regularization</p>
-  <details><summary>Research summary</summary><div class="summary-body"><p>Comparing regularization strategies for mitigating reward hacking in Best-of-N sampling. This work is ongoing.</p></div></details>
+  <h3>Comparing Reward Hacking Mitigation Strategies for Best-of-N</h3>
+  <p class="meta">Ongoing · Best-of-N · Inference-time alignment · Reward hacking</p>
+  <details><summary>Research summary</summary><div class="summary-body">
+    <p>Recent work proposes several ways to mitigate reward hacking in Best-of-N (BoN) inference-time alignment, including E<sub>M</sub>-regularized BoN, &chi;<sup>2</sup>-regularization, caution-penalty BoN, and InfoRM. These methods are mostly evaluated against standard baselines rather than against each other, so a fair comparison under one setting is still missing. This project has two goals:</p>
+    <ol class="summary-goals">
+      <li>Empirically compare these mitigation approaches under a unified experimental setting.</li>
+      <li>Test the theoretical predictions of <a href="https://arxiv.org/abs/2603.05739" target="_blank" rel="noopener"><em>Revisiting the (Sub)Optimality of Best-of-N for Inference-Time Alignment</em></a>, in particular whether E<sub>M</sub>-regularized BoN mitigates reward hacking and behaves as predicted at large N.</li>
+    </ol>
+  </div></details>
 </li>
 <!-- PROJECT 2: edit the title, topics and summary below. -->
 <li id="project-2">
