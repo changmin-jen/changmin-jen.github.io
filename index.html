@@ -52,6 +52,8 @@ summary { cursor:pointer; color:var(--accent); font-size:14px; width:fit-content
 details[open] summary { margin-bottom:10px; }
 .summary-body { background:var(--soft); border-left:2px solid #c7cce0; padding:14px 18px; margin-top:10px; color:#444; font-size:14px; }
 .summary-body p { margin:0; }
+.project-desc { font-size:15px; margin-bottom:8px; }
+.project-links { display:flex; gap:18px; font-size:14px; font-weight:600; margin:0; }
 .summary-goals { margin:10px 0 0; padding-left:20px; display:grid; gap:6px; }
 .paper-figure { margin:18px 0 0; padding:16px; background:#fff; border:1px solid var(--line); }
 .paper-figure a { display:block; width:fit-content; max-width:100%; margin:auto; }
@@ -116,7 +118,7 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
   <section id="research" aria-labelledby="research-heading">
     <div class="section-intro"><h2 id="research-heading">Research</h2><p>My work focuses on sampling and regularization methods for more reliable inference-time alignment.</p></div>
     <div class="cards"><article class="card"><span class="number">01</span><h3>Reward Hacking Mitigation</h3><p>Comparing regularization strategies to mitigate reward hacking in Best-of-N sampling.</p><a href="#project-1">Ongoing project</a></article>
-<article class="card"><span class="number">02</span><h3>Inference-Time Alignment</h3><p>Reproducing Value-Guided Backtracking for language model generation.</p><a href="#project-2">Reproduction project</a></article></div>
+<article class="card"><span class="number">02</span><h3>Inference-Time Alignment</h3><p>Reproducing Value-Guided Backtracking for language model generation.</p><a href="vgb.html">Read the report</a></article></div>
   </section>
   <!-- PUBLICATIONS: Changmin Jeon is the confirmed first author. Add the full coauthor list before release. -->
   <section id="publications" aria-labelledby="publications-heading">
@@ -153,8 +155,9 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
 <!-- PROJECT 2: edit the title, topics and summary below. -->
 <li id="project-2">
   <h3>Value-Guided Backtracking (VGB) Reproduction</h3>
-  <p class="meta">Reproduction · Value-Guided Backtracking</p>
-  <details><summary>Research summary</summary><div class="summary-body"><p>Reproducing the Value-Guided Backtracking (VGB) method for language model generation.</p></div></details>
+  <p class="meta">Reproduction · Inference-time alignment · Process verifiers</p>
+  <p class="project-desc">Independent implementation of VGB from <a href="https://arxiv.org/abs/2510.03149" target="_blank" rel="noopener"><em>Taming Imperfect Process Verifiers</em></a>, for which no official code exists. Three of the paper's five tasks (ABC, Parity, Dyck grammar) are reproduced so far; the other two are in progress.</p>
+  <p class="project-links"><a href="vgb.html">Read the report →</a><a href="https://github.com/changmin-jen/VGB" target="_blank" rel="noopener">Code</a></p>
 </li></ol>
   </section>
   <!-- UPDATES: duplicate one date/description pair to add a new update. -->

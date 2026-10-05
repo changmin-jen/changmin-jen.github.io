@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Reproduction of Value-Guided Backtracking (VGB) from Rohatgi et al., Taming Imperfect Process Verifiers, across five constrained-sampling tasks.">
+  <title>VGB Reproduction · Changmin Jeon</title>
+  <style>
+:root { --ink:#111; --muted:#626262; --accent:#444d87; --line:#ddd; --soft:#f6f7f9; --good:#2f6b3a; --warn:#8a5a12; }
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top:72px; }
+body { margin:0; color:var(--ink); background:#fff; font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+a { color:var(--accent); text-underline-offset:3px; }
+a:hover { color:#222a61; }
+a:focus-visible,summary:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
+.wrap { width:min(860px,calc(100% - 40px)); margin-inline:auto; }
+.topbar { border-bottom:1px solid #e5e5e5; background:#fff; position:sticky; top:0; z-index:5; }
+.nav-row { min-height:54px; display:flex; justify-content:space-between; align-items:center; gap:24px; }
+.brand { color:#111; text-decoration:none; font-weight:700; white-space:nowrap; }
+.back { font-size:14px; text-decoration:none; color:var(--muted); }
+.back:hover { color:var(--accent); text-decoration:underline; }
+header.doc { padding:34px 0 26px; }
+.eyebrow { color:#555; font-size:13px; font-weight:650; letter-spacing:.6px; text-transform:uppercase; margin:0 0 10px; }
+h1 { font-size:34px; line-height:1.22; margin:0 0 12px; letter-spacing:-.8px; text-wrap:balance; }
+.cite { color:var(--muted); font-size:15px; margin:0 0 16px; }
+.links { display:flex; gap:18px; flex-wrap:wrap; font-weight:600; font-size:15px; }
+.lede { font-size:17px; max-width:68ch; margin:22px 0 0; }
+.toc { display:flex; flex-wrap:wrap; gap:6px 18px; margin:20px 0 0; padding:12px 0 0; border-top:1px solid var(--line); font-size:14px; }
+.toc a { color:var(--muted); text-decoration:none; }
+.toc a:hover { color:var(--accent); text-decoration:underline; }
+section { border-top:1px solid var(--line); padding:26px 0 30px; }
+h2 { font-size:23px; line-height:1.35; margin:0 0 16px; text-wrap:balance; }
+h3 { font-size:17px; line-height:1.4; margin:24px 0 8px; }
+p { margin:0 0 14px; max-width:72ch; }
+.muted { color:var(--muted); }
+.label { font-weight:700; }
+.status { display:inline-block; border:1px solid var(--line); border-radius:999px; padding:0 9px; font-size:12px; font-weight:650; background:var(--soft); white-space:nowrap; vertical-align:2px; margin-left:6px; }
+.status.done { color:var(--good); border-color:#c9dccb; background:#f2f8f2; }
+.status.wip { color:var(--warn); border-color:#e7d6b8; background:#fbf6ec; }
+.algo { background:var(--soft); border:1px solid var(--line); padding:16px 20px; margin:16px 0 18px; font-size:15px; }
+.algo-title { font-weight:700; margin-bottom:8px; }
+.algo ol { margin:0; padding-left:22px; display:grid; gap:4px; }
+.algo .case { display:block; padding-left:14px; color:#333; }
+.algo .note { color:var(--muted); font-size:13px; margin:12px 0 0; }
+figure { margin:18px 0 22px; }
+figure a { display:block; width:fit-content; max-width:100%; margin-inline:auto; }
+figure img { display:block; width:100%; height:auto; margin-inline:auto; border:1px solid #eee; }
+figure.tall img { max-width:540px; }
+figure.mid img { max-width:680px; }
+figcaption { margin:10px auto 0; color:var(--muted); font-size:13px; line-height:1.55; max-width:72ch; }
+figcaption b { color:var(--ink); }
+.grid2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:18px 0 8px; }
+.grid2 figure { margin:0; }
+.grid2 figcaption { font-size:12.5px; }
+.table-wrap { overflow-x:auto; margin:18px 0 8px; }
+table { border-collapse:collapse; font-size:14px; min-width:560px; width:100%; font-variant-numeric:tabular-nums; }
+th,td { border-bottom:1px solid var(--line); padding:6px 10px; text-align:right; }
+th { font-weight:650; background:var(--soft); }
+th:first-child,td:first-child { text-align:left; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:13px; }
+td.win { font-weight:700; }
+.summary { width:100%; min-width:640px; }
+.summary td,.summary th { text-align:left; vertical-align:top; font-family:inherit; font-size:14px; }
+.summary td:first-child { font-family:inherit; font-weight:650; white-space:nowrap; }
+ul.refs { padding-left:20px; margin:0; display:grid; gap:8px; font-size:15px; }
+footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; padding:20px 0 30px; }
+.footer-row { display:flex; justify-content:space-between; gap:20px; }
+@media(max-width:680px) {
+ h1 { font-size:27px; }
+ .lede { font-size:16px; }
+ .grid2 { grid-template-columns:1fr; }
+ .footer-row { flex-direction:column; gap:5px; }
+}
+@media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap nav-row">
+    <a class="brand" href="index.html">Changmin Jeon</a>
+    <a class="back" href="index.html#project-2">← Back to projects</a>
+  </div>
+</header>
+<main class="wrap">
+  <header class="doc">
+    <p class="eyebrow">Reproduction report · In progress</p>
+    <h1>Reproducing VGB: Taming Imperfect Process Verifiers</h1>
+    <p class="cite">Reproducing Rohatgi, Shetty, Saless, Li, Moitra, Risteski &amp; Foster, “Taming Imperfect Process Verifiers: A Sampling Perspective on Backtracking,” <a href="https://arxiv.org/abs/2510.03149" target="_blank" rel="noopener">arXiv:2510.03149</a>.</p>
+    <div class="links"><a href="https://github.com/changmin-jen/VGB" target="_blank" rel="noopener">Code</a><a href="https://arxiv.org/abs/2510.03149" target="_blank" rel="noopener">Original paper</a></div>
+    <p class="lede">No official code has been released for this paper. I implemented VGB, the paper's stochastic-backtracking generalization of the Sinclair–Jerrum random walk, from the algorithm specification and appendix pseudocode, and reproduced its five experimental tasks. This page covers the method, each task's setup (including my own choices where the paper is underspecified), and how my results compare with the paper's.</p>
+    <nav class="toc" aria-label="Contents">
+      <a href="#overview">Overview</a><a href="#summary">Results at a glance</a><a href="#abc">ABC</a><a href="#parity">Parity</a><a href="#dyck">Dyck grammar</a><a href="#python">Python test cases</a><a href="#letter">Letter avoidance</a><a href="#implementation">Implementation</a><a href="#references">References</a>
+    </nav>
+  </header>
+
+  <section id="overview" aria-labelledby="overview-h">
+    <h2 id="overview-h">Paper overview</h2>
+    <p>If the true value function guiding generation were known exactly, sampling from the target distribution would be easy with action-level rejection sampling (ActionLevelRS). In practice only an approximate value function V̂ is available, fit by regression on Monte Carlo rollouts. The paper shows that ActionLevelRS with an approximate V̂ amplifies errors across the generation horizon H: small value errors compound token by token, because every step commits irrevocably to the token it picked.</p>
+    <p>VGB's fix is to let generation <em>backtrack</em>, undoing a bad token instead of staying stuck downstream of it. The paper proves this prevents the error amplification (Theorems 4.1–4.2) and validates it on five constrained-sampling tasks.</p>
+    <h3>The VGB random walk</h3>
+    <p>VGB is a lazy random walk on the tree of partial generations. From any node it stays put with probability 1/2 (laziness, so the chain has a stationary distribution). Otherwise it moves to a neighbor: it extends to a child with probability proportional to π<sub>ref</sub>(next token)·V̂(extended sequence), or backtracks to the parent with probability proportional to V̂(current sequence).</p>
+    <div class="algo" role="figure" aria-label="Algorithm 1">
+      <div class="algo-title">Algorithm 1 · VGB as implemented in this reproduction</div>
+      <ol>
+        <li><b>Input:</b> base model π<sub>ref</sub>, approximate value function V̂, prompt x, horizon H. If an outcome-level reward is available, set V̂(x, y<sub>1:H</sub>) := r<sup>⋆</sup>(x, y<sub>1:H</sub>).</li>
+        <li>Initialize y<sup>(0)</sup> := ∅ and t = 0.</li>
+        <li><b>while</b> |y<sup>(t)</sup>| &lt; H <b>do</b></li>
+        <li>Set h := |y<sup>(t)</sup>|.</li>
+        <li>Define p<sup>(t)</sup> over the neighborhood of y<sup>(t)</sup><sub>1:h</sub>:
+          <span class="case"><b>Backtrack</b> to y<sub>1:h−1</sub> with weight ∝ V̂(x, y<sub>1:h</sub>) if h &gt; 0, else 0.</span>
+          <span class="case"><b>Extend</b> with y<sub>h+1</sub> ∈ A with weight ∝ π<sub>ref</sub>(y<sub>h+1</sub> | x, y<sub>1:h</sub>) · V̂(x, y<sub>1:h</sub>, y<sub>h+1</sub>) if h &lt; H, else 0.</span></li>
+        <li>Sample y<sup>(t+1)</sup> ~ p<sup>(t)</sup> and increment t.</li>
+        <li><b>return</b> y<sup>(t)</sup>.</li>
+      </ol>
+      <p class="note">For tasks with a large action space (Python test cases, letter avoidance), step 5 is not computed explicitly. Instead K = 32 candidate tokens are sampled from π<sub>ref</sub> and the move is chosen among them by implicit rejection sampling (the paper's Algorithm 8).</p>
+    </div>
+  </section>
+
+  <section id="summary" aria-labelledby="summary-h">
+    <h2 id="summary-h">Results at a glance</h2>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Task</th><th>Status</th><th>What the reproduction shows</th></tr></thead>
+        <tbody>
+          <tr><td><a href="#abc">ABC</a></td><td><span class="status done">Reproduced</span></td><td>ActionLevelRS's KL to π<sup>⋆</sup> grows faster with H than VGB's, as the paper predicts. At N = 10,000 and H ≤ 6 the two are statistically indistinguishable, and ActionLevelRS is cheaper.</td></tr>
+          <tr><td><a href="#parity">Parity</a></td><td><span class="status done">Reproduced</span></td><td>Once V̂ is trained, VGB beats ActionLevelRS on wall-clock time and step count. For K = 4 the order reverses early in training. Value-function error stays near 0.5 at the hard parity positions.</td></tr>
+          <tr><td><a href="#dyck">Dyck grammar</a></td><td><span class="status done">Reproduced</span></td><td>VGB and VGB-Momentum lie beyond the Block BoN / Block RS accuracy–diversity frontier. VGB tracks π<sup>⋆</sup> most closely in aggregate, at a higher step count.</td></tr>
+          <tr><td><a href="#python">Python test cases</a></td><td><span class="status wip">In progress</span></td><td>Implementation and training details still being finalized.</td></tr>
+          <tr><td><a href="#letter">Letter avoidance</a></td><td><span class="status wip">Preliminary</span></td><td>First figures are in. Write-up of the win-rate aggregation and the ActionLevelRS restart heuristic is pending.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="abc" aria-labelledby="abc-h">
+    <h2 id="abc-h">1. ABC task <span class="status done">Reproduced</span></h2>
+    <p><span class="label">Task.</span> Alphabet {a, b, c}. The base model is uniform over all length-H sequences and the reward is 1 only if every token is “a” or “b”, so π<sup>⋆</sup> is uniform over {a, b}<sup>H</sup>. This instantiates the paper's Example 3.1, the “benign perturbation” failure mode: there is no computational obstacle to learning the value function, so it isolates the effect of ordinary training error. The true value function is V<sup>⋆</sup>(y<sub>1:h</sub>) = (2/3)<sup>H−h</sup>·𝟙[c ∉ y<sub>1:h</sub>]. The paper's theory inflates V̂ by (1+ε<sub>V</sub>) whenever the last token is “a” and proves ActionLevelRS's TV error then grows like √H. The question here is whether the same compounding appears with a real trained V̂.</p>
+    <p><span class="label">Setup.</span> π<sub>ref</sub> draws a, b, c independently with probability 1/3. The value function is a one-hidden-layer MLP (width 128) on one-hot inputs, trained separately for each position h = 1…H−1 (position H uses the true reward). Adam, learning rate 0.01, binary cross-entropy, 100 steps, for N ∈ {500, 1000, 10000} rollouts and H ∈ {5, …, 10}.</p>
+    <p><span class="label">What is measured.</span> Both algorithms use the true reward at the final position, so every sample has reward 1. What can still differ is the distribution within that reward-1 set.</p>
+    <figure>
+      <a href="figures/vgb/abc-kl.png" target="_blank" rel="noopener"><img src="figures/vgb/abc-kl.png" alt="Three panels for N = 500, 1000, 10000: estimated KL divergence to the target versus horizon H for VGB and ActionLevelRS." loading="lazy"></a>
+      <figcaption><b>Figure 3.</b> Estimated KL divergence of VGB and ActionLevelRS to π<sup>⋆</sup> (uniform over {a,b}<sup>H</sup>). H is the horizon, N the number of value-function training samples. Mean and standard error over 10 independent runs.</figcaption>
+    </figure>
+    <figure>
+      <a href="figures/vgb/abc-steps.png" target="_blank" rel="noopener"><img src="figures/vgb/abc-steps.png" alt="Three panels: average step count versus horizon H for VGB and ActionLevelRS." loading="lazy"></a>
+      <figcaption><b>Figure 5.</b> Average step count on the ABC task. Mean and standard error over 10 independent runs.</figcaption>
+    </figure>
+    <p><span class="label">Analysis.</span> In all three training-sample settings, ActionLevelRS's KL divergence rises more steeply with H than VGB's. This matches the paper's claim that error compounds more severely for ActionLevelRS over longer horizons, while VGB's backtracking limits the accumulation. More training data makes V̂ more accurate and lowers KL for both algorithms. For VGB, a better V̂ also means fewer wrong turns, so it backtracks less and its step count drops.</p>
+    <p>At N = 10,000 and H = 5, 6 the confidence intervals overlap, so the KL gap is not significant there, while ActionLevelRS uses fewer steps. When V̂ is already accurate and the horizon is short, backtracking buys little accuracy and still costs computation, so ActionLevelRS can be the better accuracy–compute trade-off.</p>
+  </section>
+
+  <section id="parity" aria-labelledby="parity-h">
+    <h2 id="parity-h">2. Parity task <span class="status done">Reproduced</span></h2>
+    <p><span class="label">Task.</span> Horizon H = K·M (M blocks of K bits), alphabet {0, 1}. At positions h ≡ K−1 (mod K) the true value depends on the parity of the previous K−1 bits, which is notoriously hard for gradient descent to learn. Positions h ≡ 0 (mod K) reveal the answer exactly. This is the paper's Example 3.2, the “delayed feedback” failure mode, where the difficulty sits in training the value function itself.</p>
+    <p><span class="label">Setup.</span> A separate MLP per position h = 1…H−1 (Linear → ReLU → Linear → Sigmoid, width 128, one-hot inputs). Each is trained by Monte Carlo regression: draw y<sub>1:H</sub> ~ π<sub>ref</sub>, compute r(y<sub>1:H</sub>), and regress every prefix y<sub>1:h</sub> onto that reward, so one rollout gives one example per position. Adam (lr 0.001), batch 128, MSE, one epoch of 10,000 batches (1.28M rollouts), checkpointed every 1,000 batches. Swept K ∈ {4, 5} × M ∈ {8, 9, 10}.</p>
+    <p><span class="label">Experiment 1: efficiency (Figures 6–7).</span> Across checkpoints, measure the wall-clock time, step count and timeout rate needed to find one reward-1 response. VGB keeps walking the same tree until it reaches a reward-1 leaf. ActionLevelRS has no recovery and restarts whenever every candidate has zero weight (“stuck”). 100 samples per algorithm per checkpoint, 60-second timeout; timed-out samples are excluded from time and step statistics and counted separately.</p>
+    <p><span class="label">Experiment 2: diagnosing the gap (Figure 8).</span> For K = 5, M = 8 (H = 40), at positions h ≡ K−1 and h ≡ 0 (mod K), take 100 roll-ins from π<sup>⋆</sup> and compute V̂(wrong) / (V̂(correct) + V̂(wrong)): the probability ActionLevelRS picks the wrong token there, tracked over training.</p>
+    <div class="grid2">
+      <figure>
+        <a href="figures/vgb/parity-k4.png" target="_blank" rel="noopener"><img src="figures/vgb/parity-k4.png" alt="Grid of plots for K=4 and M=8,9,10: wall-clock time, step count and timeout fraction over training checkpoints for VGB and ActionLevelRS." loading="lazy"></a>
+        <figcaption><b>Figure 6.</b> K = 4, M ∈ {8, 9, 10} (H ∈ {32, 36, 40}), checkpoints 1,000–9,000. Rows: wall-clock time (log), step count (log), timeout fraction. 60 s cap; mean and s.e. over 100 samples.</figcaption>
+      </figure>
+      <figure>
+        <a href="figures/vgb/parity-k5.png" target="_blank" rel="noopener"><img src="figures/vgb/parity-k5.png" alt="Grid of plots for K=5 and M=8,9,10: wall-clock time, step count and timeout fraction over training checkpoints for VGB and ActionLevelRS." loading="lazy"></a>
+        <figcaption><b>Figure 7.</b> K = 5, M ∈ {8, 9, 10} (H ∈ {40, 45, 50}), checkpoints 5,000–14,000. Same layout as Figure 6.</figcaption>
+      </figure>
+    </div>
+    <figure class="mid">
+      <a href="figures/vgb/parity-error.png" target="_blank" rel="noopener"><img src="figures/vgb/parity-error.png" alt="Conditional training error over training batches for each position; blue curves for h ≡ 0 mod K fall to near zero, red curves for h ≡ K−1 mod K stay near 0.5." loading="lazy"></a>
+      <figcaption><b>Figure 8.</b> Per-position value-function error for K = 5, M = 8: the probability that ActionLevelRS picks the wrong token, averaged over 100 roll-ins from π<sup>⋆</sup>. Only positions h ≡ K−1 and h ≡ 0 (mod K) are shown.</figcaption>
+    </figure>
+    <p><span class="label">Analysis.</span> With a well-trained V̂ (Figure 6), VGB beats ActionLevelRS on both wall-clock time and step count. Early in training the order reverses: ActionLevelRS is faster and VGB times out more. Larger M raises cost overall and delays VGB's crossover. The full M = 9 trajectory has the shape of roughly the first 5,000 batches of M = 8, and M = 10 the shape of the first 3,000. The similarity is in the trend, not the absolute values. Within the same training budget the harder settings have not reached the regime where VGB's advantage shows, and would likely trace a similar shape with more training.</p>
+    <p>With K = 5 (Figure 7) there is no early reversal: VGB is more efficient at every checkpoint, ActionLevelRS times out at a nonzero rate (especially at M = 10), and VGB essentially never does. Together with Figure 6, VGB's advantage appears earlier and holds more consistently as the horizon grows.</p>
+    <p>Figure 8 shows where ActionLevelRS fails. Every h ≡ 0 (mod K) curve (blue) converges to near-zero error. Every h ≡ K−1 (mod K) curve (red) except h = 4 stays near 0.5, no better than guessing. At h ≡ 0, π<sub>ref</sub> already assigns zero probability to the wrong bit, so V̂ only needs a single-bit check. At h ≡ K−1 the right choice is the XOR of the preceding K−1 bits, which SGD struggles to learn for the usual parity-learning reasons.</p>
+    <p>Within each group, position has opposite effects. Among easy positions, later blocks converge <em>fastest</em>: conditional on success so far, the choice of y<sub>h</sub> changes the expected reward by 2<sup>t−M</sup> (t = block index), which is tiny early and close to 1 late, so late labels are far more informative. Among hard positions, later blocks converge more slowly, if at all, consistent with the relevant K−1 bits becoming harder to pick out of a longer, mostly irrelevant prefix. (h = H is excluded because the true reward is used there.)</p>
+  </section>
+
+  <section id="dyck" aria-labelledby="dyck-h">
+    <h2 id="dyck-h">3. Dyck grammar task <span class="status done">Reproduced</span></h2>
+    <p><span class="label">Task.</span> Generate balanced strings over two bracket types: [()] is valid, ([)] is not. Vocabulary of 8 tokens {(, ), [, ], B, E, P, S} with Begin/End markers and two unused placeholders. π<sub>ref</sub> is a Transformer trained from scratch on valid strings, with a deliberate bias toward square brackets (open [ with probability 0.8, ( with 0.2). It is nearly perfect in distribution but much weaker on out-of-distribution prefixes dominated by round brackets, which is where the value functions are trained and evaluated.</p>
+    <p><span class="label">Base model.</span> 300,000 valid length-32 strings from a stack-based generator: open when the stack is empty, otherwise open or close with equal probability, and force closes when remaining length equals stack depth. Maximum depth 12, following Botta et al. Transformer with embedding 512, 6 layers, 8 heads; next-token prediction with Adam (lr 3×10<sup>−4</sup>), batch 32, weight decay 0.1, 100 warmup steps.</p>
+    <p><span class="label">Value functions.</span> From a fixed length-17 OOD prefix, π<sub>ref</sub> generates 10,000 rollouts of 17 more tokens; reward 1 if all 32 tokens form a valid string. One MLP per response position h = 1…17: one-hot inputs, Adam (lr 0.003), weight decay 0.1, batch 32, MSE, 40 epochs.</p>
+    <p><span class="label">Baselines.</span> <em>Block Best-of-N</em> generates B candidate blocks of length L from π<sub>ref</sub> and keeps the one with the highest V̂, for a budget of about B·H. <em>Block Rejection Sampling</em> uses the same candidates but samples one in proportion to V̂, keeping more diversity. <em>VGB-Momentum</em> gives each node a direction (descending v<sup>+</sup> or ascending v<sup>−</sup>), with Q<sub>up</sub>(v) = V̂(v) and Q<sub>down</sub>(v) = Σ<sub>c</sub> π<sub>ref</sub>(c | v)V̂(c). Transition weights combine the child weights, a stay weight ∝ min(Q<sub>up</sub>, Q<sub>down</sub>) and a direction-change weight set by their difference, so the walk persists in one direction instead of choosing up or down afresh each step.</p>
+    <p><span class="label">Experiment 1: accuracy vs. diversity (Figures 9–12).</span> Fixed OOD prefix <code>B((()(((((((()(((</code>. At value-function epochs {1, 2, 3, 5, 10, 40}, each method generates 3,000 completions. The true reward is <em>not</em> used at the final position, so accuracy is a real metric. Block methods sweep L ∈ {1, 2, 4, 8, 16} × B ∈ {2, 4, 8, 16, 32} to trace a Pareto frontier. Diversity is the number of distinct correct completions. For reference, the paper's π<sub>ref</sub> baseline gets accuracy 0.028 with 43 distinct correct completions; mine gets 0.040 with 66.</p>
+    <p><span class="label">Experiment 2: distributional comparison (Figure 13, Table 3).</span> 12 OOD prefixes whose base-model accuracy is between 1% and 10%, drawn from a strongly shifted generator (P(open) = 0.65, P(“(”) = 0.95 when opening) and screened with 3,000 π<sub>ref</sub> rollouts each. Per prefix, 10,000 OutcomeLevelRS samples approximate π<sup>⋆</sup> and 10,000 π<sub>ref</sub> rollouts train 17 value MLPs. VGB, VGB-Momentum and ActionLevelRS each draw 1,000 reward-1 samples at epochs {1, 2, 5, 10, 40}, with the true reward at the last position and restarts for ActionLevelRS. Metrics are L1 error between open-bracket-position histograms and π<sup>⋆</sup>'s (direct KL is unreliable over 8<sup>17</sup> sequences with 1,000 samples), and average step count.</p>
+    <div class="grid2">
+      <figure>
+        <a href="figures/vgb/dyck-vgb-bon.png" target="_blank" rel="noopener"><img src="figures/vgb/dyck-vgb-bon.png" alt="Accuracy versus distinct correct completions across training epochs, VGB against the Block Best-of-N frontier." loading="lazy"></a>
+        <figcaption><b>Figure 9.</b> VGB (green) vs. Block Best-of-N.</figcaption>
+      </figure>
+      <figure>
+        <a href="figures/vgb/dyck-vgb-brs.png" target="_blank" rel="noopener"><img src="figures/vgb/dyck-vgb-brs.png" alt="Accuracy versus distinct correct completions, VGB against the Block Rejection Sampling frontier." loading="lazy"></a>
+        <figcaption><b>Figure 10.</b> VGB (green) vs. Block Rejection Sampling.</figcaption>
+      </figure>
+      <figure>
+        <a href="figures/vgb/dyck-mom-bon.png" target="_blank" rel="noopener"><img src="figures/vgb/dyck-mom-bon.png" alt="Accuracy versus distinct correct completions, VGB-Momentum against the Block Best-of-N frontier." loading="lazy"></a>
+        <figcaption><b>Figure 11.</b> VGB-Momentum (blue) vs. Block Best-of-N.</figcaption>
+      </figure>
+      <figure>
+        <a href="figures/vgb/dyck-mom-brs.png" target="_blank" rel="noopener"><img src="figures/vgb/dyck-mom-brs.png" alt="Accuracy versus distinct correct completions, VGB-Momentum against the Block Rejection Sampling frontier." loading="lazy"></a>
+        <figcaption><b>Figure 12.</b> VGB-Momentum (blue) vs. Block Rejection Sampling.</figcaption>
+      </figure>
+    </div>
+    <p class="muted" style="font-size:13px">Figures 9–12: accuracy (x) and number of distinct correct completions (y) across value-function training epochs. Red circles are block-method configurations (darker = longer block); the dashed line is their Pareto frontier.</p>
+    <figure>
+      <a href="figures/vgb/dyck-dist.png" target="_blank" rel="noopener"><img src="figures/vgb/dyck-dist.png" alt="Left: histogram error over training epochs; right: step count over training epochs, for VGB, VGB-Momentum, ActionLevelRS." loading="lazy"></a>
+      <figcaption><b>Figure 13.</b> Distributional comparison with the true reward at the final position. Left: open-bracket-position histogram error. Right: average step count. Mean and standard error over 12 OOD prefixes.</figcaption>
+    </figure>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th rowspan="2">Prefix</th><th colspan="2">Average steps (↓)</th><th colspan="2">Distributional error (↓)</th></tr>
+          <tr><th>π<sub>ref</sub></th><th>VGB</th><th>ActionLevelRS</th><th>VGB</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>(((((()([(((())(</td><td class="win">181.276</td><td>406.896</td><td class="win">0.043</td><td>0.047</td></tr>
+          <tr><td>((()((((((())[((</td><td class="win">242.289</td><td>540.340</td><td class="win">0.198</td><td>0.208</td></tr>
+          <tr><td>((((((((())(((((</td><td class="win">373.961</td><td>413.538</td><td>0.163</td><td class="win">0.083</td></tr>
+          <tr><td>(()(((()((((((((</td><td class="win">374.020</td><td>438.736</td><td>0.152</td><td class="win">0.076</td></tr>
+          <tr><td>((()(((((((()(((</td><td>401.759</td><td class="win">390.826</td><td>0.171</td><td class="win">0.054</td></tr>
+          <tr><td>([()]((((([()(([</td><td class="win">493.207</td><td>840.106</td><td class="win">0.273</td><td>0.371</td></tr>
+          <tr><td>()((((((((((((()</td><td>511.396</td><td class="win">468.322</td><td>0.149</td><td class="win">0.062</td></tr>
+          <tr><td>((([(((()[((((((</td><td>568.281</td><td class="win">370.626</td><td>0.332</td><td class="win">0.093</td></tr>
+          <tr><td>((((((([()(()(()</td><td>616.394</td><td class="win">572.806</td><td class="win">0.257</td><td>0.276</td></tr>
+          <tr><td>(((()((((()[((((</td><td class="win">638.314</td><td>638.816</td><td>0.214</td><td class="win">0.151</td></tr>
+          <tr><td>((((((((())(([()</td><td>707.154</td><td class="win">481.566</td><td>0.272</td><td class="win">0.062</td></tr>
+          <tr><td>((((()((()((((([</td><td>1042.423</td><td class="win">436.158</td><td>0.192</td><td class="win">0.110</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" style="font-size:13px"><b style="color:var(--ink)">Table 3.</b> Per-prefix results at epoch 40, sorted by π<sub>ref</sub>'s average steps to a correct generation. Bold marks the better value in each pair. VGB has lower distributional error than ActionLevelRS on 8 of 12 prefixes and needs fewer steps than π<sub>ref</sub> on 6 of 12.</p>
+    <p><span class="label">Analysis.</span> In Figures 9–12 the VGB-based methods sit beyond the Block BoN and Block RS frontier, even against configurations that use as many or more reference-model calls. VGB gets a better accuracy–diversity trade-off at a comparable inference budget.</p>
+    <p>In Figure 13, VGB approximates the target distribution best, followed by ActionLevelRS and VGB-Momentum. VGB-Momentum's weaker fit may come from backtracking less often: backtracking is what lets VGB revise an earlier decision, and with less of it VGB-Momentum behaves more like the one-directional ActionLevelRS, which would explain their similar histogram errors.</p>
+    <p>VGB also takes more steps than the other methods because of its extra backtracking moves, so part of its better distributional fit may come from a larger effective compute budget. This leaves an open question: how much of the gain comes from backtracking itself, and how much from simply spending more computation?</p>
+  </section>
+
+  <section id="python" aria-labelledby="python-h">
+    <h2 id="python-h">4. Python test case generation <span class="status wip">In progress</span></h2>
+    <p><span class="label">Task.</span> Generate a valid test case (an assertion) for a randomly named Python append-like function, following the prompt distribution of Botta et al. (2025). The base model is Qwen2.5-0.5B, whose ~150,000-token vocabulary is far too large to enumerate, so VGB uses the implicit rejection-sampling approximation (Algorithm 8) with 32 candidate tokens per step.</p>
+    <p><span class="label">Setup.</span> A single value network, unlike the per-position networks above, trained on pooled hidden states of the base model. VGB and ActionLevelRS are compared on three distributional metrics: length histogram, object-type histogram, and fraction of distinct generations.</p>
+    <p class="muted">Results and remaining implementation details, including how the function-name pool discrepancy was resolved, will be added here.</p>
+  </section>
+
+  <section id="letter" aria-labelledby="letter-h">
+    <h2 id="letter-h">5. Letter avoidance <span class="status wip">Preliminary</span></h2>
+    <p><span class="label">Task.</span> Generate a 32-token sentence that never contains the letter “e”. No value function is trained. The value is a fixed decay weight raised to the number of remaining tokens, times the binary reward, with the backtracking weight α varied between 0 and 1. α has no effect on ActionLevelRS, which reduces to standard locally constrained decoding, so this task isolates the benefit of backtracking with no confound from value-function quality.</p>
+    <p><span class="label">Setup.</span> Base model Qwen2.5-0.5B. Evaluated by GPT-4o-mini pairwise coherence win rate and Qwen2.5-1.5B normalized log-probability, across α ∈ {0.1, …, 0.5} and horizon ∈ {8, 16, 32}.</p>
+    <figure>
+      <a href="figures/vgb/letter-alpha.png" target="_blank" rel="noopener"><img src="figures/vgb/letter-alpha.png" alt="Win rate and normalized log-probability versus backtracking weight alpha for VGB and ActionLevel." loading="lazy"></a>
+      <figcaption><b>Figure 4.</b> Win rate (left) and evaluator normalized log-probability (right) against the backtracking weight α, VGB vs. ActionLevel.</figcaption>
+    </figure>
+    <figure>
+      <a href="figures/vgb/letter-alpha-reset.png" target="_blank" rel="noopener"><img src="figures/vgb/letter-alpha-reset.png" alt="Win rate and normalized log-probability versus alpha for VGB and ActionLevel-Reset." loading="lazy"></a>
+      <figcaption><b>Figure 16.</b> Same comparison against ActionLevel-Reset, the variant that restarts when stuck.</figcaption>
+    </figure>
+    <div class="grid2">
+      <figure>
+        <a href="figures/vgb/letter-steps.png" target="_blank" rel="noopener"><img src="figures/vgb/letter-steps.png" alt="Step count versus alpha for VGB, ActionLevel and ActionLevel-Reset." loading="lazy"></a>
+        <figcaption><b>Figure 17.</b> Step count against α for VGB, ActionLevel and ActionLevel-Reset.</figcaption>
+      </figure>
+      <figure>
+        <a href="figures/vgb/letter-horizon.png" target="_blank" rel="noopener"><img src="figures/vgb/letter-horizon.png" alt="Grid for H = 8, 16, 32: win rate, normalized log-probability and step count versus alpha." loading="lazy"></a>
+        <figcaption><b>Figure 19.</b> Win rate, normalized log-probability and step count against α for H ∈ {8, 16, 32}.</figcaption>
+      </figure>
+    </div>
+    <p class="muted">Analysis to follow, together with notes on win-rate aggregation and the choice between ActionLevelRS and ActionLevelRS-Reset as the restart heuristic.</p>
+  </section>
+
+  <section id="implementation" aria-labelledby="impl-h">
+    <h2 id="impl-h">Implementation approach</h2>
+    <p>Because no code was released for the paper, the implementation falls into two parts.</p>
+    <p><span class="label">Reused for task environments only.</span> The Dyck grammar and Python test-case tasks follow the setup of Botta et al. (2025), which the VGB paper also builds on: data distributions, prompt format and reward parsing. This code provides the base model's training distribution and the reward function and contains no VGB-specific logic.</p>
+    <p><span class="label">Implemented from the paper.</span> The VGB random walk (small- and large-action-space versions), the ActionLevelRS and block-level baselines, and value-function training by Monte Carlo rollout regression were all written from the paper's algorithm boxes and appendix, without reference to the authors' code.</p>
+    <p class="muted">Other repositories consulted for adjacent tooling: kaiwenw/value-guided-search, ServiceNow/picard, yangkevin2/naacl-2021-fudge-controlled-generation.</p>
+  </section>
+
+  <section id="references" aria-labelledby="refs-h">
+    <h2 id="refs-h">References</h2>
+    <ul class="refs">
+      <li>Rohatgi, D., Shetty, A., Saless, D., Li, Y., Moitra, A., Risteski, A., &amp; Foster, D. J. “Taming Imperfect Process Verifiers: A Sampling Perspective on Backtracking.” <a href="https://arxiv.org/abs/2510.03149" target="_blank" rel="noopener">arXiv:2510.03149</a>, 2025.</li>
+      <li>Botta, E., Li, Y., Mehta, A., Ash, J. T., Zhang, C., &amp; Risteski, A. “On the Query Complexity of Verifier-Assisted Language Generation.” ICML 2025.</li>
+      <li>Sinclair, A., &amp; Jerrum, M. “Approximate Counting, Uniform Generation and Rapidly Mixing Markov Chains.” Information and Computation, 1989.</li>
+    </ul>
+  </section>
+</main>
+<footer><div class="wrap footer-row"><span>© 2026 Changmin Jeon</span><a href="index.html">Back to homepage</a></div></footer>
+</body>
+</html>
