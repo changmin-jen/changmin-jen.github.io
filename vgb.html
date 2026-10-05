@@ -58,6 +58,11 @@ th,td { border-bottom:1px solid var(--line); padding:6px 10px; text-align:right;
 th { font-weight:650; background:var(--soft); }
 th:first-child,td:first-child { text-align:left; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:13px; }
 td.win { font-weight:700; }
+.metrics td,.metrics th { text-align:right; }
+.metrics td:first-child,.metrics th:first-child { font-family:inherit; font-size:14px; text-align:left; white-space:nowrap; }
+.metrics tr.ref td { color:var(--muted); font-style:italic; }
+pre.code { margin:0; font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace; overflow-x:auto; }
+code { font:0.9em ui-monospace,SFMono-Regular,Menlo,monospace; background:var(--soft); padding:0 3px; }
 .summary { width:100%; min-width:640px; }
 .summary td,.summary th { text-align:left; vertical-align:top; font-family:inherit; font-size:14px; }
 .summary td:first-child { font-family:inherit; font-weight:650; white-space:nowrap; }
@@ -82,7 +87,7 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
 </header>
 <main class="wrap">
   <header class="doc">
-    <p class="eyebrow">Reproduction report · In progress</p>
+    <p class="eyebrow">Reproduction report · All five tasks</p>
     <h1>Reproducing VGB: Taming Imperfect Process Verifiers</h1>
     <p class="cite">Reproducing Rohatgi, Shetty, Saless, Li, Moitra, Risteski &amp; Foster, “Taming Imperfect Process Verifiers: A Sampling Perspective on Backtracking,” <a href="https://arxiv.org/abs/2510.03149" target="_blank" rel="noopener">arXiv:2510.03149</a>.</p>
     <div class="links"><a href="https://github.com/changmin-jen/VGB" target="_blank" rel="noopener">Code</a><a href="https://arxiv.org/abs/2510.03149" target="_blank" rel="noopener">Original paper</a></div>
@@ -124,8 +129,8 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
           <tr><td><a href="#abc">ABC</a></td><td><span class="status done">Reproduced</span></td><td>ActionLevelRS's KL to π<sup>⋆</sup> grows faster with H than VGB's, as the paper predicts. At N = 10,000 and H ≤ 6 the two are statistically indistinguishable, and ActionLevelRS is cheaper.</td></tr>
           <tr><td><a href="#parity">Parity</a></td><td><span class="status done">Reproduced</span></td><td>Once V̂ is trained, VGB beats ActionLevelRS on wall-clock time and step count. For K = 4 the order reverses early in training. Value-function error stays near 0.5 at the hard parity positions.</td></tr>
           <tr><td><a href="#dyck">Dyck grammar</a></td><td><span class="status done">Reproduced</span></td><td>VGB and VGB-Momentum lie beyond the Block BoN / Block RS accuracy–diversity frontier. VGB tracks π<sup>⋆</sup> most closely in aggregate, at a higher step count.</td></tr>
-          <tr><td><a href="#python">Python test cases</a></td><td><span class="status wip">In progress</span></td><td>Implementation and training details still being finalized.</td></tr>
-          <tr><td><a href="#letter">Letter avoidance</a></td><td><span class="status wip">Preliminary</span></td><td>First figures are in. Write-up of the win-rate aggregation and the ActionLevelRS restart heuristic is pending.</td></tr>
+          <tr><td><a href="#python">Python test cases</a></td><td><span class="status done">Reproduced</span></td><td>VGB's length-histogram error is much lower than ActionLevelRS's (57.6 vs. 93.5; paper 69.8 vs. 92.2), at about 29× the sampling steps. Type error and diversity are similar.</td></tr>
+          <tr><td><a href="#letter">Letter avoidance</a></td><td><span class="status done">Reproduced</span></td><td>VGB has higher log-probability at every α. Its coherence win rate is clearest at small α, and its advantage grows with the horizon while cost rises sharply with α.</td></tr>
         </tbody>
       </table>
     </div>
@@ -234,35 +239,74 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
   </section>
 
   <section id="python" aria-labelledby="python-h">
-    <h2 id="python-h">4. Python test case generation <span class="status wip">In progress</span></h2>
-    <p><span class="label">Task.</span> Generate a valid test case (an assertion) for a randomly named Python append-like function, following the prompt distribution of Botta et al. (2025). The base model is Qwen2.5-0.5B, whose ~150,000-token vocabulary is far too large to enumerate, so VGB uses the implicit rejection-sampling approximation (Algorithm 8) with 32 candidate tokens per step.</p>
-    <p><span class="label">Setup.</span> A single value network, unlike the per-position networks above, trained on pooled hidden states of the base model. VGB and ActionLevelRS are compared on three distributional metrics: length histogram, object-type histogram, and fraction of distinct generations.</p>
-    <p class="muted">Results and remaining implementation details, including how the function-name pool discrepancy was resolved, will be added here.</p>
+    <h2 id="python-h">4. Python test case generation <span class="status done">Reproduced</span></h2>
+    <p><span class="label">Task.</span> Generate one valid <code>assert</code> test case for a randomly named three-letter Python append function. Each prompt defines a function that takes a list <code>l</code> and an <code>item</code>, appends the item, and asks for one test case in a single line. Names come from a fixed pool (ovs, cyk, mcl, heh, fgu, knk, zmf, bgz, cub, dfn).</p>
+    <div class="algo">
+      <div class="algo-title">Example</div>
+<pre class="code">def ovs(l, item):
+    assert type(l) is list
+    l.append(item)
+
+"List 1 test case of ovs, in one line"</pre>
+      <p class="note" style="margin-top:8px">A valid response: <code>assert ovs([3,2], "asd") == [3,2,"asd"]</code></p>
+    </div>
+    <p>π<sub>ref</sub> is pretrained Qwen2.5-0.5B with a vocabulary of about 150K tokens, and the horizon is fixed at H = 32. The reward is binary. The response is scanned line by line for <code>assert {fn}({list_arg}, {item}) == {result_list}</code>, and gets reward 1 only if exactly one valid test case is found: the function name matches the prompt, the first argument parses as a list, the item is appendable, the right-hand side parses as a list, and appending the item yields exactly that list. Surrounding text is allowed; multiple valid test cases get reward 0.</p>
+    <p><span class="label">Value function.</span> 50,000 prompts, one π<sub>ref</sub> response each. For each rollout a random position h is chosen and Qwen2.5-0.5B's penultimate-layer hidden states over positions 1…h are mean-pooled into an 896-dimensional prefix representation. One-hot inputs are impractical at this vocabulary size, and mean pooling lets one shared network cover every position instead of one MLP per position. V̂ is an MLP with one hidden layer of width 8 and a sigmoid output, trained with Adam (lr 10<sup>−4</sup>, weight decay 10<sup>−4</sup>), batch 100, 100 epochs.</p>
+    <p><span class="label">Experiment: distributional fidelity.</span> 1,000 prompts, with VGB and ActionLevelRS run on each. The true reward is available only at the final position h = H. Transitions use the K = 32 candidate approximation. Metrics are computed on the parsed list in the completed response: <em>length histogram error</em> (ℓ<sub>1</sub> distance of the list-length distribution to π<sup>⋆</sup>, approximated by OutcomeLevelRS), <em>type histogram error</em> (ℓ<sub>1</sub> distance over element types such as int and str), and <em>fraction of distinct generations</em>.</p>
+    <div class="table-wrap">
+      <table class="metrics">
+        <thead><tr><th>Algorithm</th><th>Length hist. error (↓)</th><th>Type hist. error (↓)</th><th>Frac. distinct (↑)</th><th>Avg. steps (↓)</th></tr></thead>
+        <tbody>
+          <tr><td>VGB</td><td class="win">57.64 ± 6.47</td><td>0.0194 ± 0.0042</td><td>0.391 ± 0.004</td><td>1293.76 ± 23.91</td></tr>
+          <tr><td>ActionLevelRS</td><td>93.55 ± 9.44</td><td>0.0138 ± 0.0029</td><td>0.385 ± 0.003</td><td class="win">45.14 ± 0.43</td></tr>
+          <tr class="ref"><td>Paper: VGB</td><td>69.75 ± 7.98</td><td>–</td><td>–</td><td>–</td></tr>
+          <tr class="ref"><td>Paper: ActionLevelRS</td><td>92.20 ± 6.64</td><td>–</td><td>–</td><td>–</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" style="font-size:13px"><b style="color:var(--ink)">Table 1.</b> 1,000 reward-1 generations per algorithm; mean ± standard error over independent seeds. Bold marks a clear winner; the other two metrics overlap within standard error. Paper values shown for length error only.</p>
+    <div class="table-wrap">
+      <table class="metrics">
+        <thead><tr><th>List length</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
+        <tbody>
+          <tr><td>Target (OutcomeLevelRS)</td><td>386</td><td>130</td><td>239</td><td>224</td><td>16</td></tr>
+          <tr><td>VGB</td><td>416</td><td>117</td><td>238</td><td>205</td><td>23</td></tr>
+          <tr><td>ActionLevelRS</td><td>469</td><td>129</td><td>238</td><td>158</td><td>6</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" style="font-size:13px"><b style="color:var(--ink)">Length histogram.</b> Count of generated test cases by list length.</p>
+    <p><span class="label">Analysis.</span> The two methods differ mainly in length histogram error. The paper reports 69.75 ± 7.98 for VGB and 92.20 ± 6.64 for ActionLevelRS; the reproduction gets 57.64 and 93.55, the same direction with a slightly larger gap. Type histogram error and fraction of distinct generations are similar, with overlapping standard errors.</p>
+    <p>The histogram shows where the gap comes from. VGB stays close to the target, while ActionLevelRS overproduces length-1 lists and underproduces long ones, especially lengths 4 and 5. The paper attributes this to test-case lengths differing in how hard they are to generate. ActionLevelRS commits to each token and cannot revise, so it drifts toward easy lengths; VGB can back out of unfavorable trajectories and match the target better.</p>
+    <p>That improvement is expensive: VGB averages 1293.76 ± 23.91 steps against 45.14 ± 0.43 for ActionLevelRS, about 29× more. This is the central trade-off of backtracking. It corrects the bias caused by irreversible local decisions, but needs much more test-time computation to do it.</p>
   </section>
 
   <section id="letter" aria-labelledby="letter-h">
-    <h2 id="letter-h">5. Letter avoidance <span class="status wip">Preliminary</span></h2>
-    <p><span class="label">Task.</span> Generate a 32-token sentence that never contains the letter “e”. No value function is trained. The value is a fixed decay weight raised to the number of remaining tokens, times the binary reward, with the backtracking weight α varied between 0 and 1. α has no effect on ActionLevelRS, which reduces to standard locally constrained decoding, so this task isolates the benefit of backtracking with no confound from value-function quality.</p>
-    <p><span class="label">Setup.</span> Base model Qwen2.5-0.5B. Evaluated by GPT-4o-mini pairwise coherence win rate and Qwen2.5-1.5B normalized log-probability, across α ∈ {0.1, …, 0.5} and horizon ∈ {8, 16, 32}.</p>
+    <h2 id="letter-h">5. Letter avoidance <span class="status done">Reproduced</span></h2>
+    <p><span class="label">Task.</span> Given the fixed prompt “Generate a one-sentence story without using the letter ‘e’:”, generate H = 32 tokens with no letter “e”. π<sub>ref</sub> is pretrained Qwen2.5-0.5B, and each transition uses K = 32 candidate tokens sampled from π<sub>ref</sub>. The reward is 1 if the text contains no “e” and no EOS appears before the horizon, otherwise 0.</p>
+    <p><span class="label">Value function.</span> Hand-crafted, with no training: V̂<sub>α</sub>(x, y) := α<sup>H−|y|</sup> r<sup>⋆</sup>(x, y), swept over α ∈ {0.1, 0.2, 0.3, 0.4, 0.5}. ActionLevelRS is invariant to α, while in VGB α sets how often it backtracks: under the K-candidate approximation the parent-to-child weight ratio is ω<sub>parent</sub>/ω<sub>child</sub> = Kα. Because nothing is learned, any gap between the methods comes from backtracking itself rather than from value-function quality.</p>
+    <p><span class="label">When every candidate fails.</span> With only 32 candidates per step, all of them can contain an “e”, leaving no candidate with positive weight. ActionLevelRS then samples more candidates until a valid one appears. ActionLevelRS-Reset discards the trajectory and restarts from the prompt. VGB can instead walk backward and escape the bad prefix.</p>
+    <p><span class="label">Experiment 1: coherence under the constraint (Figures 4, 16, 17).</span> For each α, VGB generates 1,000 completions; ActionLevelRS and ActionLevelRS-Reset generate 1,000 each. Metrics: <em>win rate</em> judged by GPT-4o-mini on which of two fragments is more coherent, with A/B order randomized; and <em>horizon-normalized log-probability</em> under an independent Qwen2.5-1.5B, i.e. total log-probability divided by H = 32.</p>
+    <p><span class="label">Experiment 2: varying the horizon (Figure 19).</span> An extension beyond the paper: H ∈ {8, 16, 32}, VGB against ActionLevelRS only (ActionLevelRS-Reset was dropped for compute cost), with step count added as a cost measure.</p>
     <figure>
       <a href="figures/vgb/letter-alpha.png" target="_blank" rel="noopener"><img src="figures/vgb/letter-alpha.png" alt="Win rate and normalized log-probability versus backtracking weight alpha for VGB and ActionLevel." loading="lazy"></a>
-      <figcaption><b>Figure 4.</b> Win rate (left) and evaluator normalized log-probability (right) against the backtracking weight α, VGB vs. ActionLevel.</figcaption>
+      <figcaption><b>Figure 4.</b> VGB vs. ActionLevelRS, varying α. Left: GPT-4o-mini coherence win rate of VGB. Right: average horizon-normalized log-probability under Qwen2.5-1.5B.</figcaption>
     </figure>
     <figure>
       <a href="figures/vgb/letter-alpha-reset.png" target="_blank" rel="noopener"><img src="figures/vgb/letter-alpha-reset.png" alt="Win rate and normalized log-probability versus alpha for VGB and ActionLevel-Reset." loading="lazy"></a>
-      <figcaption><b>Figure 16.</b> Same comparison against ActionLevel-Reset, the variant that restarts when stuck.</figcaption>
+      <figcaption><b>Figure 16.</b> The same comparison against ActionLevelRS-Reset.</figcaption>
     </figure>
-    <div class="grid2">
-      <figure>
-        <a href="figures/vgb/letter-steps.png" target="_blank" rel="noopener"><img src="figures/vgb/letter-steps.png" alt="Step count versus alpha for VGB, ActionLevel and ActionLevel-Reset." loading="lazy"></a>
-        <figcaption><b>Figure 17.</b> Step count against α for VGB, ActionLevel and ActionLevel-Reset.</figcaption>
-      </figure>
-      <figure>
-        <a href="figures/vgb/letter-horizon.png" target="_blank" rel="noopener"><img src="figures/vgb/letter-horizon.png" alt="Grid for H = 8, 16, 32: win rate, normalized log-probability and step count versus alpha." loading="lazy"></a>
-        <figcaption><b>Figure 19.</b> Win rate, normalized log-probability and step count against α for H ∈ {8, 16, 32}.</figcaption>
-      </figure>
-    </div>
-    <p class="muted">Analysis to follow, together with notes on win-rate aggregation and the choice between ActionLevelRS and ActionLevelRS-Reset as the restart heuristic.</p>
+    <figure class="mid">
+      <a href="figures/vgb/letter-steps.png" target="_blank" rel="noopener"><img src="figures/vgb/letter-steps.png" alt="Step count versus alpha for VGB, ActionLevel and ActionLevel-Reset." loading="lazy"></a>
+      <figcaption><b>Figure 17.</b> Step count for VGB, ActionLevelRS and ActionLevelRS-Reset at H = 32, varying α.</figcaption>
+    </figure>
+    <p><span class="label">Analysis.</span> At H = 32, VGB reaches higher log-probability than both baselines at every α, with non-overlapping bands (Figures 4, 16), and log-probability keeps rising with α. Win rate depends on the baseline. Against ActionLevelRS, the lower confidence bound is clearly above 0.5 only at α = 0.1–0.2, sits near 0.5 at α = 0.3–0.4, and includes 0.5 at α = 0.5. Against the weaker ActionLevelRS-Reset it exceeds 0.5 for α = 0.1–0.4 and only touches 0.5 at α = 0.5. Win rate tends to fall as α grows (peaking near α = 0.2 in Figure 16). More backtracking raises likelihood without improving judged coherence; I have not pinned down why. Either higher likelihood does not imply higher coherence, or the win-rate differences are at noise level.</p>
+    <p>Cost rises sharply with α (Figure 17). VGB goes from about 50 steps at α = 0.1 to about 270 at α = 0.5, passes ActionLevelRS (about 65) from α ≈ 0.2, and stays above ActionLevelRS-Reset (about 40) at every α. Small α (0.1–0.2) gives the best balance of win rate, log-probability and compute.</p>
+    <figure class="mid">
+      <a href="figures/vgb/letter-horizon.png" target="_blank" rel="noopener"><img src="figures/vgb/letter-horizon.png" alt="Grid for H = 8, 16, 32: win rate, normalized log-probability and step count versus alpha." loading="lazy"></a>
+      <figcaption><b>Figure 19.</b> VGB vs. ActionLevelRS for H ∈ {8, 16, 32}. Top: GPT-4o-mini win rate over 1,000 response pairs with 95% binomial confidence intervals. Middle: horizon-normalized log-probability under Qwen2.5-1.5B, mean and standard error over 1,000 responses. Bottom: step count.</figcaption>
+    </figure>
+    <p>Across horizons (Figure 19), VGB's benefit grows with H. At H = 8 the win rate hovers around 0.5 with intervals that include it, and the log-probability gap is small, with overlapping bands at some α. At H = 16 and 32 the log-probability gap widens and win rate rises above 0.5 at small α, consistent with the paper's claim that backtracking matters more as errors accumulate over longer horizons. VGB takes more steps than ActionLevelRS at every α when H = 8, and is comparable or cheaper at H = 16 and 32 only for small α (about 0.1–0.2).</p>
   </section>
 
   <section id="implementation" aria-labelledby="impl-h">
