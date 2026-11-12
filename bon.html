@@ -130,23 +130,48 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
       </table>
     </div>
     <p class="muted" style="font-size:13px"><b style="color:var(--ink)">Table 1.</b> The four selection rules compared.</p>
-<h3>2.2 MBR-BoN</h3>
+    <h3>2.2 MBR-BoN</h3>
     <p>MBR-BoN adds to each score the average similarity between that candidate and all the others, here the cosine similarity of sentence embeddings. Jinnai et al. present this Minimum-Bayes-Risk term as a proximity regularizer: it prefers responses near the center of what π<sub>ref</sub> produces, where the reward model is more trustworthy. It is a soft bonus, not a filter, so a far-off response still wins if its score lead exceeds β times its proximity deficit.</p>
-    <h3>2.3 χ²-BoN</h3>
-    <p>Huang et al. target the solution of a χ²-regularized reward-maximization problem, which has the closed form π(y) ∝ π<sub>ref</sub>(y) · max(0, r̂(y) − λ), with β the regularization strength. Candidates scoring below λ get probability zero, and above λ the probability grows with the excess score. Algorithm 1 gives the sampler.</p>
     <div class="algo" role="figure" aria-label="Algorithm 1">
-      <div class="algo-title">Algorithm 1 · χ²-BoN as sequential rejection sampling (after Huang et al.)</div>
+      <div class="algo-title">Algorithm 1 · MBR-BoN (after Jinnai et al.)</div>
+      <ol>
+        <li><b>Input:</b> π<sub>ref</sub>, proxy r̂, similarity sim(·,·), prompt x, sample budget N, strength β.</li>
+        <li>Draw y<sub>1</sub>, …, y<sub>N</sub> ~ π<sub>ref</sub>(· | x).</li>
+        <li><b>for</b> i = 1 … N: s<sub>i</sub> := r̂(x, y<sub>i</sub>) + β · (1/N) Σ<sub>j</sub> sim(y<sub>i</sub>, y<sub>j</sub>).</li>
+        <li><b>return</b> y<sub>i*</sub> with i* = argmax<sub>i</sub> s<sub>i</sub>.</li>
+      </ol>
+      <p class="note">β = 0 is vanilla BoN; as β → ∞ the reward is ignored and the most central sample (MBR decoding) is returned. The proximity term needs N embeddings and N² similarities.</p>
+    </div>
+    <p><span class="label">Theoretical guarantee.</span> Jinnai et al. show that the MBR term equals the negative Wasserstein distance between a point mass on y<sub>i</sub> and the empirical distribution of the N samples, with cost −sim (their Proposition 1). This is the sense in which it is a proximity regularizer. The paper gives no guarantee about how MBR-BoN behaves as N grows, so its resistance to overoptimization is an empirical claim.</p>
+
+    <h3>2.3 χ²-BoN</h3>
+    <p>Huang et al. target the solution of a χ²-regularized reward-maximization problem, which has the closed form π(y) ∝ π<sub>ref</sub>(y) · max(0, r̂(y) − λ), with β the regularization strength. Candidates scoring below λ get probability zero, and above λ the probability grows with the excess score. Algorithm 2 gives the sampler.</p>
+    <div class="algo" role="figure" aria-label="Algorithm 2">
+      <div class="algo-title">Algorithm 2 · χ²-BoN as sequential rejection sampling (after Huang et al.)</div>
       <ol>
         <li><b>Input:</b> π<sub>ref</sub>, proxy r̂, prompt x, sample budget N, strength β.</li>
-        <li>Set the weight w(y) := max(0, r̂(x, y) − λ) / β, where λ is chosen so that w averages to 1 under π<sub>ref</sub> (estimated from N samples), and let M be an upper bound on w.</li>
+        <li>Set the weight w(y) := max(0, r̂(x, y) − λ) / β, where λ is chosen so that w averages to 1 under π<sub>ref</sub> (estimated from N samples), and let B be an upper bound on w.</li>
         <li>Draw y<sub>1</sub>, …, y<sub>N+1</sub> ~ π<sub>ref</sub>.</li>
-        <li><b>for</b> i = 1 … N: accept y<sub>i</sub> with probability min{ w(y<sub>i</sub>) / M, 1 }; <b>return</b> the first accepted y<sub>i</sub>.</li>
+        <li><b>for</b> i = 1 … N: accept y<sub>i</sub> with probability min{ w(y<sub>i</sub>) / B, 1 }; <b>return</b> the first accepted y<sub>i</sub>.</li>
         <li>If none is accepted, <b>return</b> y<sub>N+1</sub> (a plain π<sub>ref</sub> sample).</li>
       </ol>
-      <p class="note">A larger β lowers λ and keeps more candidates alive, which is a stronger pull toward π<sub>ref</sub>.</p>
+      <p class="note">A larger β lowers λ and keeps more candidates alive, which is a stronger pull toward π<sub>ref</sub>; as β → 0 only the top candidates survive and the rule approaches vanilla BoN. <b>This implementation</b> estimates λ and runs the rejection loop on the same N samples, and if nothing is accepted it falls back to vanilla BoN (argmax r̂) instead of a fresh π<sub>ref</sub> sample. <span class="tbd">TBD: fallback rate per N.</span></p>
     </div>
+    <p><span class="label">Theoretical guarantee.</span> Huang et al. prove that this procedure, which they call InferenceTimePessimism, is optimal and scaling-monotonic: its performance does not degrade as N increases, under their assumptions on how well π<sub>ref</sub> covers good responses. Vanilla BoN carries no such guarantee and can degrade.</p>
+
     <h3>2.4 E<sub>M</sub>-BoN</h3>
-    <p>Sriraman &amp; Block regularize with the E<sub>M</sub>-divergence, which penalizes candidates that are unlikely under π<sub>ref</sub>. The optimal policy is π<sub>ref</sub> conditioned on r̂ ≥ λ, where λ is the (1 − 1/M)-quantile of r̂ under π<sub>ref</sub>. In practice: draw N samples, keep the top ⌈N/M⌉ by r̂, and choose one uniformly. With N ≤ M this is vanilla BoN, and for larger N the output stops drifting toward the extreme tail, which is what makes it monotone.</p>
+    <p>Sriraman &amp; Block regularize with the E<sub>M</sub>-divergence, which penalizes candidates that are unlikely under π<sub>ref</sub>. The optimal policy is π<sub>M</sub> = π<sub>ref</sub>(· | r̂ ≥ λ), where λ is the (1 − 1/M)-quantile of r̂ under π<sub>ref</sub>, and Algorithm 3 approximates it from N samples.</p>
+    <div class="algo" role="figure" aria-label="Algorithm 3">
+      <div class="algo-title">Algorithm 3 · E<sub>M</sub>-BoN (after Sriraman &amp; Block)</div>
+      <ol>
+        <li><b>Input:</b> π<sub>ref</sub>, proxy r̂, prompt x, sample budget N, regularization M ≥ 1.</li>
+        <li>Draw y<sub>1</sub>, …, y<sub>N</sub> ~ π<sub>ref</sub>(· | x).</li>
+        <li>Keep the k := ⌈N/M⌉ candidates with the highest r̂ (ties broken at random).</li>
+        <li><b>return</b> one of the k uniformly at random.</li>
+      </ol>
+      <p class="note">With N ≤ M, k = 1 and this is exactly vanilla BoN; M = 1 returns a uniform π<sub>ref</sub> sample. For N &gt; M the output stops drifting toward the extreme tail.</p>
+    </div>
+    <p><span class="label">Theoretical guarantee.</span> The N-sample procedure is within 1/N in total variation of π<sub>M</sub>. Its gap to the target policy is bounded by E<sub>M</sub>(π<sup>⋆</sup> ‖ π<sub>ref</sub>) + M·ε + 1/N, where ε is the reward-model error, so N is decoupled from the regularization M and performance provably does not decay with N. With M tuned, it keeps the optimal win-rate that properly tuned vanilla BoN achieves (Sriraman &amp; Block, Lemma 1 and Theorems 2 and 5).</p>
 
     <h3>2.5 A unified view</h3>
     <p>Looking at the probability each rule gives to the N candidates makes the family easier to compare. BoN puts all the mass on the top candidate. E<sub>M</sub>-BoN spreads it uniformly over the top ⌈N/M⌉. χ²-BoN spreads it roughly in proportion to the score excess over λ. MBR-BoN instead changes the score itself, adding a proximity bonus, before taking the maximum. The first three act on how mass is distributed over the ranking, while MBR-BoN acts on the ranking itself.</p>
