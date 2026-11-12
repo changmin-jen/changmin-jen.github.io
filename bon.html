@@ -103,11 +103,7 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
 
   <section id="intro" aria-labelledby="intro-h">
     <h2 id="intro-h">1. Introduction</h2>
-    <p>Best-of-N sampling is the simplest way to spend inference-time compute on alignment. Draw N responses from a reference model π<sub>ref</sub>, score each with a proxy reward model r̂, and return the highest-scoring one (Figure 1). It needs no training and works with black-box models. Its weakness is that r̂ is only a proxy for the true reward r<sup>⋆</sup>. The larger N is, the more the selected response is chosen for the places where r̂ is wrong, so the proxy score keeps climbing while true quality plateaus or declines. This is reward overoptimization (Gao et al., 2023).</p>
-    <figure class="mid">
-      <a href="figures/bon/bon-flow.png" target="_blank" rel="noopener"><img src="figures/bon/bon-flow.png" alt="Flow diagram of Best-of-N: a prompt goes to the reference LLM, which produces N responses; a proxy reward model scores each; the highest-scoring response is returned as the final response." loading="lazy"></a>
-      <figcaption><b>Figure 1.</b> Best-of-N sampling. N responses are drawn from π<sub>ref</sub>, scored by the proxy reward model r̂, and the top-scoring one, ŷ = argmax<sub>i</sub> r̂(x, y<sub>i</sub>), is returned. As N grows the proxy score keeps rising, but if the proxy is inaccurate the true quality can drop.</figcaption>
-    </figure>
+    <p>Best-of-N sampling is the simplest way to spend inference-time compute on alignment. Draw N responses from a reference model π<sub>ref</sub>, score each with a proxy reward model r̂, and return the highest-scoring one: y<sub>1</sub>, …, y<sub>N</sub> ~ π<sub>ref</sub>(· | x) and ŷ = argmax<sub>i</sub> r̂(x, y<sub>i</sub>). It needs no training and works with black-box models. Its weakness is that r̂ is only a proxy for the true reward r<sup>⋆</sup>. The larger N is, the more the selected response is chosen for the places where r̂ is wrong, so the proxy score keeps climbing while true quality plateaus or declines. This is reward overoptimization (Gao et al., 2023).</p>
     <p>One point matters for everything below: the proxy score rising with N is not evidence of overoptimization. The maximum of N draws grows with N whether or not the reward model is any good. Overoptimization is visible only against a gold measure that the selection never saw, so every experiment here reports gold and proxy side by side.</p>
     <p>Three recent papers propose training-free ways to mitigate this. Each is evaluated mostly against vanilla BoN, with its own gold metric (a gold reward model, an LLM-judged win-rate, or answer accuracy), its own proxy reward models and its own range of N.</p>
     <p>Comparisons across BoN variants do exist. Ichihara et al. (2025) compare regularized BoN variants (KL- and Wasserstein-distance-regularized selection, MBR decoding, and their own stochastic and length-regularized versions) by win-rate against vanilla BoN under a gold reward model, using 128 responses per prompt on AlpacaFarm and hh-rlhf. That study predates χ²-BoN and E<sub>M</sub>-BoN, though, and to my knowledge no study compares these latest strategies with one another or with the earlier regularizers under a single protocol. A practitioner's question, which method should I use and when, therefore has no direct answer. This project tries to give one. Its contributions are:</p>
@@ -121,7 +117,7 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
   <section id="background" aria-labelledby="background-h">
     <h2 id="background-h">2. Background</h2>
     <h3>2.1 The three regularized variants</h3>
-    <p>All three keep the BoN interface: draw N candidates from π<sub>ref</sub>, score them, and pick one. They differ in what they change about the pick. Table 1 summarizes them and Figure 2 shows each on the same eight toy candidates. I use the names MBR-BoN, χ²-BoN and E<sub>M</sub>-BoN throughout. The original papers call the second one inference-time pessimism (ITP) and the third E<sub>M</sub>-regularized BoN.</p>
+    <p>All three keep the BoN interface: draw N candidates from π<sub>ref</sub>, score them, and pick one. They differ in what they change about the pick. Table 1 summarizes their selection rules. I use the names MBR-BoN, χ²-BoN and E<sub>M</sub>-BoN throughout. The original papers call the second one inference-time pessimism (ITP) and the third E<sub>M</sub>-regularized BoN.</p>
     <div class="table-wrap">
       <table class="summary methods">
         <thead><tr><th>Method</th><th>Selection rule</th><th>Knob</th><th>What it guards against</th><th>Extra cost</th></tr></thead>
@@ -134,12 +130,7 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
       </table>
     </div>
     <p class="muted" style="font-size:13px"><b style="color:var(--ink)">Table 1.</b> The four selection rules compared.</p>
-    <figure class="mid">
-      <a href="figures/bon/bon-methods.png" target="_blank" rel="noopener"><img src="figures/bon/bon-methods.png" alt="Four bar-chart panels over the same eight candidates showing which candidate each method picks: BoN, MBR-BoN, χ²-BoN and E_M-BoN." loading="lazy"></a>
-      <figcaption><b>Figure 2.</b> The same eight candidates under four selection rules (toy example; bar height is the proxy score r̂). Red marks the final pick. <b>MBR-BoN:</b> hatched = β · proximity, so the response far from the others (y<sub>5</sub>) loses to y<sub>6</sub>. <b>χ²-BoN:</b> candidates are checked in order and accepted with probability proportional to the excess over λ; the first accept wins and later, faded ones are not examined. <b>E<sub>M</sub>-BoN:</b> dashed boxes mark the top ⌈N/M⌉ = 2 for M = 4, and one of them is sampled uniformly.</figcaption>
-    </figure>
-
-    <h3>2.2 MBR-BoN</h3>
+<h3>2.2 MBR-BoN</h3>
     <p>MBR-BoN adds to each score the average similarity between that candidate and all the others, here the cosine similarity of sentence embeddings. Jinnai et al. present this Minimum-Bayes-Risk term as a proximity regularizer: it prefers responses near the center of what π<sub>ref</sub> produces, where the reward model is more trustworthy. It is a soft bonus, not a filter, so a far-off response still wins if its score lead exceeds β times its proximity deficit.</p>
     <h3>2.3 χ²-BoN</h3>
     <p>Huang et al. target the solution of a χ²-regularized reward-maximization problem, which has the closed form π(y) ∝ π<sub>ref</sub>(y) · max(0, r̂(y) − λ), with β the regularization strength. Candidates scoring below λ get probability zero, and above λ the probability grows with the excess score. Algorithm 1 gives the sampler.</p>
@@ -152,7 +143,7 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
         <li><b>for</b> i = 1 … N: accept y<sub>i</sub> with probability min{ w(y<sub>i</sub>) / M, 1 }; <b>return</b> the first accepted y<sub>i</sub>.</li>
         <li>If none is accepted, <b>return</b> y<sub>N+1</sub> (a plain π<sub>ref</sub> sample).</li>
       </ol>
-      <p class="note">A larger β lowers λ and keeps more candidates alive, which is a stronger pull toward π<sub>ref</sub>. Figure 2 omits β for readability.</p>
+      <p class="note">A larger β lowers λ and keeps more candidates alive, which is a stronger pull toward π<sub>ref</sub>.</p>
     </div>
     <h3>2.4 E<sub>M</sub>-BoN</h3>
     <p>Sriraman &amp; Block regularize with the E<sub>M</sub>-divergence, which penalizes candidates that are unlikely under π<sub>ref</sub>. The optimal policy is π<sub>ref</sub> conditioned on r̂ ≥ λ, where λ is the (1 − 1/M)-quantile of r̂ under π<sub>ref</sub>. In practice: draw N samples, keep the top ⌈N/M⌉ by r̂, and choose one uniformly. With N ≤ M this is vanilla BoN, and for larger N the output stops drifting toward the extreme tail, which is what makes it monotone.</p>
@@ -215,7 +206,7 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
     <p>Question: as N grows, does the gold win-rate of vanilla BoN peak and fall while the proxy score keeps rising (H1)? The setting is 128 AlpacaEval prompts with the OASST reward model as the proxy.</p>
     <figure>
       <a href="figures/bon/alpacaeval-scaling.png" target="_blank" rel="noopener"><img src="figures/bon/alpacaeval-scaling.png" alt="Two line plots against N on a log scale for vanilla BoN, E_M-BoN, χ²-BoN and MBR-BoN on AlpacaEval. Left: gold win-rate rises from about 50% at N=1 to about 80–85% and flattens, with MBR-BoN highest. Right: proxy reward keeps rising for vanilla BoN and MBR-BoN, and flattens for E_M-BoN and χ²-BoN." loading="lazy"></a>
-      <figcaption><b>Figure 3.</b> AlpacaEval scaling with the OASST proxy (128 prompts, policy Qwen2.5-1.5B-Instruct). Left: gold win-rate (%) of the selected response against reference responses from π<sub>ref</sub>. Right: proxy reward. Both are plotted against N on a log scale; the last point is N = 10,000. Shaded bands: <span class="tbd">TBD: interval type</span>. In the legend, ITP is χ²-BoN and EM-BoN is E<sub>M</sub>-BoN. Method hyperparameters: <span class="tbd">TBD</span>.</figcaption>
+      <figcaption><b>Figure 1.</b> AlpacaEval scaling with the OASST proxy (128 prompts, policy Qwen2.5-1.5B-Instruct). Left: gold win-rate (%) of the selected response against reference responses from π<sub>ref</sub>. Right: proxy reward. Both are plotted against N on a log scale; the last point is N = 10,000. Shaded bands: <span class="tbd">TBD: interval type</span>. In the legend, ITP is χ²-BoN and EM-BoN is E<sub>M</sub>-BoN. Method hyperparameters: <span class="tbd">TBD</span>.</figcaption>
     </figure>
     <p><b>Vanilla BoN.</b> Gold starts near 50% at N = 1, as it should when the selected response is a single draw from π<sub>ref</sub>. It climbs to about 80% by N = 2<sup>6</sup> and then creeps up to roughly 84% around N = 2<sup>12</sup>. Over the same range the proxy reward keeps rising, from about −2 to 8. So the proxy keeps improving while gold has nearly stopped, but I do not see a clear decline: gold at N = 10,000 is about 83%, inside the band of its peak. H1 is therefore only partly supported in this run. Gold saturates, it does not fall. For reference, the KL divergence of the BoN policy from π<sub>ref</sub>, log N − (N − 1)/N, is about 8.2 nats at N = 10,000.</p>
     <p><b>Regularized methods.</b> E<sub>M</sub>-BoN and χ²-BoN flatten the proxy reward at about 5.9 and 5.3 beyond N ≈ 2<sup>8</sup>, which is the intended effect of holding the selection near π<sub>ref</sub>. Their gold curves track vanilla BoN up to about N = 2<sup>8</sup>. E<sub>M</sub>-BoN then sits roughly 1–3 points above vanilla for N between 2<sup>9</sup> and 2<sup>13</sup>, and χ²-BoN stays close to vanilla, about 2 points below it at N = 2<sup>11</sup>–2<sup>12</sup>. These gaps are small next to the bands, so I do not read them as a difference yet. MBR-BoN is above vanilla at every N ≥ 2<sup>6</sup>, by roughly 3–6 points, while its proxy reward rises more slowly (about 7.2 against 8.0 at N = 10,000). That it reaches higher gold with a lower proxy score is what one would expect if the proxy and the judge disagree near the top of the ranking. The paired comparison in Section 3.2.2 is what quantifies this.</p>
@@ -223,15 +214,15 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
 
     <h4 id="r-compare">3.2.2 Method comparison</h4>
     <p>Question: with hyperparameters tuned on the dev split, how do MBR-BoN, χ²-BoN and E<sub>M</sub>-BoN compare with BoN in peak gold, final gold and Δ (H2, H3)?</p>
-    <div class="pending"><p><b>Table 4 goes here.</b> Peak gold, final gold and Δ for each method, with paired-bootstrap confidence intervals. The gold-versus-N curves for all four methods are already in Figure 3 (left).</p><p><span class="tbd">TBD</span> state whether the hyperparameters in Figure 3 are the ones tuned on the dev split.</p></div>
+    <div class="pending"><p><b>Table 4 goes here.</b> Peak gold, final gold and Δ for each method, with paired-bootstrap confidence intervals. The gold-versus-N curves for all four methods are already in Figure 1 (left).</p><p><span class="tbd">TBD</span> state whether the hyperparameters in Figure 3 are the ones tuned on the dev split.</p></div>
 
     <h4 id="r-proxy">3.2.3 Effect of proxy quality (MATH)</h4>
     <p>Question: does the benefit of regularization shrink as the proxy gets stronger (H4)? MATH is evaluated with the OASST and Qwen2.5-Math-PRM-7B proxies.</p>
-    <div class="pending"><p><b>Figure 4 goes here.</b> Gold accuracy versus N on MATH for each proxy, per method.</p><p><span class="tbd">TBD</span> describe what the preliminary curves show for each proxy, and state plainly where no overoptimization is visible. A null result is still a result and it bears directly on H4.</p></div>
+    <div class="pending"><p><b>Figure 2 goes here.</b> Gold accuracy versus N on MATH for each proxy, per method.</p><p><span class="tbd">TBD</span> describe what the preliminary curves show for each proxy, and state plainly where no overoptimization is visible. A null result is still a result and it bears directly on H4.</p></div>
 
     <h4 id="r-sens">3.2.4 Hyperparameter sensitivity</h4>
     <p>Question: how fragile is each method to its knob? A method that wins only at one carefully tuned value is less useful than one that is stable across a wide range.</p>
-    <div class="pending"><p><b>Figure 5 goes here.</b> Final gold versus the knob (β or M) for each method.</p></div>
+    <div class="pending"><p><b>Figure 3 goes here.</b> Final gold versus the knob (β or M) for each method.</p></div>
   </section>
 
   <section id="discussion" aria-labelledby="discussion-h">
