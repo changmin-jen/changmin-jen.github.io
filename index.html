@@ -117,7 +117,7 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
   </div>
   <section id="research" aria-labelledby="research-heading">
     <div class="section-intro"><h2 id="research-heading">Research</h2><p>My work focuses on sampling and regularization methods for more reliable inference-time alignment.</p></div>
-    <div class="cards"><article class="card"><span class="number">01</span><h3>Reward Hacking Mitigation</h3><p>Comparing regularization strategies to mitigate reward hacking in Best-of-N sampling.</p><a href="#project-1">Ongoing project</a></article>
+    <div class="cards"><article class="card"><span class="number">01</span><h3>Reward Hacking Mitigation</h3><p>Comparing regularization strategies to mitigate reward hacking in Best-of-N sampling.</p><a href="bon.html">Read the report</a></article>
 <article class="card"><span class="number">02</span><h3>Inference-Time Alignment</h3><p>Reproducing Value-Guided Backtracking for language model generation.</p><a href="vgb.html">Read the report</a></article></div>
   </section>
   <!-- PUBLICATIONS: Changmin Jeon is the confirmed first author. Add the full coauthor list before release. -->
@@ -143,11 +143,10 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
     <ol class="project-list"><!-- PROJECT 1: edit the title, topics and summary below. -->
 <li id="project-1">
   <h3>Comparing Reward Hacking Mitigation Strategies for Best-of-N</h3>
-  <p class="meta">Ongoing · Best-of-N · Inference-time alignment · Reward hacking</p>
-  <details><summary>Research summary</summary><div class="summary-body">
-    <p>Recent work proposes several ways to mitigate reward hacking in Best-of-N (BoN) inference-time alignment, including E<sub>M</sub>-regularized BoN, &chi;<sup>2</sup>-regularization, caution-penalty BoN, and InfoRM. These methods are mostly evaluated against standard baselines rather than against each other, so a fair comparison under one setting is still missing. This project has two goals:</p>
-    <ol class="summary-goals">
-      <li>Empirically compare these mitigation approaches under a unified experimental setting.</li>
+  <p class="meta">Ongoing · Best-of-N · Inference-time alignment · Reward overoptimization</p>
+  <p class="project-desc">A head-to-head comparison of training-free mitigation methods for Best-of-N (MBR-BoN, &chi;<sup>2</sup>-BoN and E<sub>M</sub>-BoN) against vanilla BoN under one protocol: a shared response pool, proxy reward models of weak to strong quality, and hyperparameters tuned on held-out prompts.</p>
+  <p class="project-links"><a href="bon.html">Read the report →</a></p>
+</li>
       <li>Test the theoretical predictions of <a href="https://arxiv.org/abs/2603.05739" target="_blank" rel="noopener"><em>Revisiting the (Sub)Optimality of Best-of-N for Inference-Time Alignment</em></a>, in particular whether E<sub>M</sub>-regularized BoN mitigates reward hacking and behaves as predicted at large N.</li>
     </ol>
   </div></details>
