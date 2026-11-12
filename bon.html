@@ -256,7 +256,12 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
 
     <h4 id="r-proxy">3.2.3 Effect of proxy quality (MATH)</h4>
     <p>Question: does the benefit of regularization shrink as the proxy gets stronger (H4)? MATH is evaluated with the OASST and Qwen2.5-Math-PRM-7B proxies.</p>
-    <div class="pending"><p><b>Figure 2 goes here.</b> Gold accuracy versus N on MATH for each proxy, per method.</p><p><span class="tbd">TBD</span> describe what the preliminary curves show for each proxy, and state plainly where no overoptimization is visible. A null result is still a result and it bears directly on H4.</p></div>
+    <figure>
+      <a href="figures/bon/math-prm-vanilla.jpg" target="_blank" rel="noopener"><img src="figures/bon/math-prm-vanilla.jpg" alt="Two line plots against N on a log scale up to 1,024 for vanilla BoN on MATH. Left: accuracy rises from about 71% at N=1 to about 86% at N=16 and stays between 86% and 87%. Right: the Qwen Math PRM proxy reward rises steadily from about 0.59 to 0.97." loading="lazy"></a>
+      <figcaption><b>Figure 2.</b> MATH scaling of vanilla BoN with the Qwen2.5-Math-PRM-7B proxy (256 test problems, policy Qwen2.5-Math-1.5B-Instruct). Left: final-answer accuracy (%), checked with Math-Verify. Right: proxy reward, the product of the PRM's step-level probabilities. Both are plotted against N on a log scale up to N = 1,024. Shaded bands: <span class="tbd">TBD: interval type</span>.</figcaption>
+    </figure>
+    <p><b>Vanilla BoN with a strong proxy.</b> Accuracy climbs from about 71% at N = 1 to about 86% at N = 2<sup>4</sup>, then stays flat, peaking near 87% at N = 2<sup>8</sup> and ending at about 86% at N = 2<sup>10</sup>. The proxy reward keeps rising the whole way, from about 0.59 to 0.97. The small dip after the peak sits inside the band, so with this proxy I see saturation but no overoptimization, which is the situation H4 describes: a strong proxy leaves little for regularization to fix.</p>
+    <div class="pending"><p><b>Still to add.</b> The same plot for the regularized methods and for the OASST proxy on MATH, so that the strong-proxy case can be set against the weak one.</p></div>
 
     <h4 id="r-sens">3.2.4 Hyperparameter sensitivity</h4>
     <p>Question: how fragile is each method to its knob? A method that wins only at one carefully tuned value is less useful than one that is stable across a wide range.</p>
