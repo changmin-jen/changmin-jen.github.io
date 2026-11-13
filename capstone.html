@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="졸업작품: Best-of-N 추론 정렬에서 보상 과최적화(Reward Overoptimization)를 완화하는 방법들을 하나의 조건에서 비교한 실험.">
-  <title>BoN 과최적화 졸업작품 · 전창민</title>
+  <title>Reward Overoptimization in Best-of-N · 졸업작품 · 전창민</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
@@ -32,7 +32,7 @@ a:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
 /* Hero */
 .hero { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:56px; align-items:center; padding:64px 0 56px; }
 .eyebrow { margin:0 0 14px; color:var(--accent); font-size:15px; font-weight:700; letter-spacing:.04em; }
-h1 { margin:0 0 18px; font-size:54px; line-height:1.18; font-weight:900; letter-spacing:-.02em; text-wrap:balance; }
+h1 { margin:0 0 18px; font-size:42px; line-height:1.22; font-weight:900; letter-spacing:-.02em; text-wrap:balance; }
 .sub { margin:0 0 24px; font-size:21px; line-height:1.6; color:var(--muted); max-width:30em; }
 .byline { display:flex; gap:10px 22px; flex-wrap:wrap; font-size:16px; color:var(--muted); }
 .byline b { color:var(--ink); font-weight:700; }
@@ -103,7 +103,7 @@ footer { border-top:1px solid var(--line); padding:28px 0 40px; color:var(--mute
 @media (max-width:900px) {
   body { font-size:17px; }
   .hero, .split { grid-template-columns:1fr; gap:32px; }
-  h1 { font-size:38px; }
+  h1 { font-size:32px; }
   .methods, .pipeline { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .findings { grid-template-columns:1fr; }
   .body { margin-left:0; }
@@ -111,7 +111,7 @@ footer { border-top:1px solid var(--line); padding:28px 0 40px; color:var(--mute
 }
 @media (max-width:560px) {
   .wrap { width:calc(100% - 32px); }
-  h1 { font-size:31px; }
+  h1 { font-size:26px; }
   h2 { font-size:27px; }
   .methods, .pipeline { grid-template-columns:1fr; }
   .nav { display:none; }
@@ -134,9 +134,10 @@ footer { border-top:1px solid var(--line); padding:28px 0 40px; color:var(--mute
   <section class="hero" aria-labelledby="title">
     <div>
       <p class="eyebrow">2026 졸업작품 · 서경대학교 전자컴퓨터공학과</p>
-      <h1 id="title">답을 많이 뽑아 고를수록<br>정말 더 좋아질까?</h1>
+      <h1 id="title">An Empirical Study of Reward Overoptimization Mitigation Strategies in Best-of-N</h1>
       <p class="sub">Best-of-N 추론 정렬에서 발생하는 <b>보상 과최적화(Reward Overoptimization)</b>와, 이를 막기 위해 제안된 방법들을 같은 조건에서 비교한 실험입니다.</p>
-      <div class="byline"><span><b>전창민</b></span><span>지도교수 <span class="tbd">입력</span></span></div>
+      <div class="byline"><span><b>전창민</b></span><span>지도교수 <b>노석범</b></span></div>
+      <div class="more" style="margin-top:22px"><a class="btn primary" href="bon.html">자세히 보기 (영문 리포트)</a></div>
     </div>
     <div class="stats" aria-label="실험 규모">
       <div class="stat"><strong>128만</strong><span>vLLM으로 생성해 비교에 사용한 LLM 응답 수 (AlpacaEval)</span></div>
@@ -290,7 +291,7 @@ footer { border-top:1px solid var(--line); padding:28px 0 40px; color:var(--mute
         <span class="chip">Python</span><span class="chip">PyTorch</span><span class="chip">vLLM</span><span class="chip">Hugging Face Transformers</span><span class="chip">Sentence-Transformers</span><span class="chip">OpenAI API</span><span class="chip">Math-Verify</span><span class="chip">Ubuntu · RTX 8000 × 2</span>
       </div>
       <div class="more">
-        <a class="btn primary" href="bon.html">자세한 연구 리포트 보기 (영문)</a>
+        <a class="btn primary" href="bon.html">자세히 보기 (영문 리포트)</a>
         <a class="btn" href="index.html">홈페이지로</a>
       </div>
     </div>
