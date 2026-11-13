@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="졸업작품: Best-of-N 추론 정렬에서 보상 과최적화(Reward Overoptimization)를 완화하는 방법들을 하나의 조건에서 비교한 실험.">
+  <title>BoN 과최적화 졸업작품 · 전창민</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+  <style>
+/* Layout: wide exhibition page read on a booth monitor. Numbered chapters, big figures, short text. Light theme on purpose, matching the homepage. */
+:root {
+  --ink:#14161f; --muted:#5d6273; --accent:#444d87; --accent-soft:#eceefa;
+  --line:#dfe1ea; --soft:#f6f7fb; --bg:#ffffff; --hot:#d94848; --hot-soft:#fdeeee;
+  --sans:"Noto Sans KR",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color-scheme: light;
+}
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top:80px; }
+body { margin:0; background:var(--bg); color:var(--ink); font:18px/1.75 var(--sans); word-break:keep-all; }
+a { color:var(--accent); text-underline-offset:3px; }
+a:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
+.wrap { width:min(1120px, calc(100% - 48px)); margin-inline:auto; }
+.topbar { position:sticky; top:0; z-index:5; background:rgba(255,255,255,.94); backdrop-filter:blur(6px); border-bottom:1px solid var(--line); }
+.nav-row { min-height:60px; display:flex; align-items:center; justify-content:space-between; gap:24px; }
+.brand { font-weight:700; color:var(--ink); text-decoration:none; }
+.nav { display:flex; gap:22px; flex-wrap:wrap; font-size:15px; }
+.nav a { color:var(--muted); text-decoration:none; }
+.nav a:hover { color:var(--accent); }
+
+/* Hero */
+.hero { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:56px; align-items:center; padding:64px 0 56px; }
+.eyebrow { margin:0 0 14px; color:var(--accent); font-size:15px; font-weight:700; letter-spacing:.04em; }
+h1 { margin:0 0 18px; font-size:54px; line-height:1.18; font-weight:900; letter-spacing:-.02em; text-wrap:balance; }
+.sub { margin:0 0 24px; font-size:21px; line-height:1.6; color:var(--muted); max-width:30em; }
+.byline { display:flex; gap:10px 22px; flex-wrap:wrap; font-size:16px; color:var(--muted); }
+.byline b { color:var(--ink); font-weight:700; }
+.stats { display:grid; gap:14px; }
+.stat { display:grid; grid-template-columns:auto 1fr; align-items:baseline; gap:18px; padding:20px 24px; background:var(--soft); border:1px solid var(--line); border-radius:10px; }
+.stat strong { font-size:40px; line-height:1; font-weight:900; color:var(--accent); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.stat span { font-size:16px; color:var(--muted); line-height:1.5; }
+
+/* Chapters */
+.chapter { border-top:1px solid var(--line); padding:64px 0; }
+.ch-head { display:grid; grid-template-columns:72px minmax(0,1fr); gap:20px; margin-bottom:28px; }
+.ch-num { font-size:44px; line-height:1; font-weight:900; color:var(--accent); opacity:.35; font-variant-numeric:tabular-nums; }
+h2 { margin:0 0 10px; font-size:34px; line-height:1.3; font-weight:900; letter-spacing:-.01em; text-wrap:balance; }
+.ch-lede { margin:0; font-size:20px; color:var(--muted); max-width:42em; }
+.body { margin-left:92px; }
+.body p { max-width:44em; margin:0 0 16px; }
+.formula { display:inline-block; margin:6px 0 18px; padding:10px 18px; background:var(--accent-soft); border-radius:8px; font-size:19px; font-weight:500; }
+figure { margin:28px 0 8px; }
+figure img { display:block; width:100%; height:auto; border:1px solid var(--line); border-radius:8px; background:#fff; }
+figcaption { margin-top:12px; font-size:15px; color:var(--muted); line-height:1.6; max-width:52em; }
+.split { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); gap:40px; align-items:center; }
+.split figure { margin:0; }
+
+.callout { border-left:4px solid var(--hot); background:var(--hot-soft); padding:16px 22px; border-radius:0 8px 8px 0; margin:20px 0; max-width:44em; }
+.callout b { color:var(--hot); }
+
+/* Method cards */
+.methods { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; margin-top:28px; }
+.method { border:1px solid var(--line); border-radius:10px; padding:22px 20px; display:flex; flex-direction:column; gap:10px; background:#fff; }
+.method h3 { margin:0; font-size:21px; font-weight:900; }
+.method .rule { font-size:15px; background:var(--soft); border-radius:6px; padding:8px 10px; line-height:1.55; }
+.method p { margin:0; font-size:15.5px; line-height:1.65; color:var(--muted); }
+.method .tag { font-size:13px; font-weight:700; color:var(--accent); }
+.method.base { background:var(--soft); }
+
+/* Pipeline */
+.pipeline { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin:28px 0; counter-reset:step; }
+.step { position:relative; border:1px solid var(--line); border-radius:10px; padding:20px; background:#fff; }
+.step::before { counter-increment:step; content:counter(step); display:inline-grid; place-items:center; width:30px; height:30px; border-radius:50%; background:var(--accent); color:#fff; font-weight:700; font-size:15px; margin-bottom:10px; }
+.step h3 { margin:0 0 6px; font-size:18px; }
+.step p { margin:0; font-size:15px; color:var(--muted); line-height:1.6; }
+.setup { width:100%; border-collapse:collapse; font-size:16px; margin-top:8px; }
+.setup th, .setup td { text-align:left; padding:12px 14px; border-bottom:1px solid var(--line); vertical-align:top; }
+.setup th { width:180px; color:var(--muted); font-weight:500; }
+
+/* Findings */
+.findings { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin-top:24px; }
+.finding { border:1px solid var(--line); border-radius:10px; padding:22px; background:#fff; }
+.finding .who { font-size:14px; font-weight:700; color:var(--accent); margin-bottom:6px; }
+.finding h3 { margin:0 0 8px; font-size:20px; line-height:1.4; }
+.finding p { margin:0; font-size:15.5px; color:var(--muted); line-height:1.65; }
+.note { font-size:14px; color:var(--muted); margin-top:16px; }
+
+.takeaways { display:grid; gap:14px; margin-top:8px; max-width:48em; }
+.takeaway { display:grid; grid-template-columns:36px minmax(0,1fr); gap:14px; align-items:start; }
+.takeaway .dot { width:36px; height:36px; border-radius:50%; background:var(--accent-soft); color:var(--accent); display:grid; place-items:center; font-weight:900; }
+.takeaway p { margin:4px 0 0; }
+
+.chips { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 24px; }
+.chip { border:1px solid var(--line); background:var(--soft); border-radius:999px; padding:6px 14px; font-size:15px; }
+.tbd { background:#fff3b0; color:#6b5200; border-radius:4px; padding:0 6px; font-size:.9em; font-weight:700; }
+
+.more { display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; }
+.btn { display:inline-block; padding:12px 22px; border-radius:8px; border:1px solid var(--accent); color:var(--accent); text-decoration:none; font-weight:700; font-size:16px; }
+.btn.primary { background:var(--accent); color:#fff; }
+footer { border-top:1px solid var(--line); padding:28px 0 40px; color:var(--muted); font-size:14px; }
+
+@media (max-width:900px) {
+  body { font-size:17px; }
+  .hero, .split { grid-template-columns:1fr; gap:32px; }
+  h1 { font-size:38px; }
+  .methods, .pipeline { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .findings { grid-template-columns:1fr; }
+  .body { margin-left:0; }
+  .ch-head { grid-template-columns:1fr; gap:6px; }
+}
+@media (max-width:560px) {
+  .wrap { width:calc(100% - 32px); }
+  h1 { font-size:31px; }
+  h2 { font-size:27px; }
+  .methods, .pipeline { grid-template-columns:1fr; }
+  .nav { display:none; }
+  .setup th { width:110px; }
+}
+@media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap nav-row">
+    <a class="brand" href="index.html">전창민</a>
+    <nav class="nav" aria-label="페이지 목차">
+      <a href="#bon">Best-of-N</a><a href="#problem">문제</a><a href="#methods">해결 방법</a><a href="#setup">실험</a><a href="#results">결과</a><a href="#takeaway">정리</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero" aria-labelledby="title">
+    <div>
+      <p class="eyebrow">2026 졸업작품 · 서경대학교 전자컴퓨터공학과</p>
+      <h1 id="title">답을 많이 뽑아 고를수록<br>정말 더 좋아질까?</h1>
+      <p class="sub">Best-of-N 추론 정렬에서 발생하는 <b>보상 과최적화(Reward Overoptimization)</b>와, 이를 막기 위해 제안된 방법들을 같은 조건에서 비교한 실험입니다.</p>
+      <div class="byline"><span><b>전창민</b></span><span>지도교수 <span class="tbd">입력</span></span></div>
+    </div>
+    <div class="stats" aria-label="실험 규모">
+      <div class="stat"><strong>128만</strong><span>vLLM으로 생성해 비교에 사용한 LLM 응답 수 (AlpacaEval)</span></div>
+      <div class="stat"><strong>4가지</strong><span>같은 후보 풀에서 비교한 응답 선택 방법</span></div>
+      <div class="stat"><strong>N = 10,000</strong><span>프롬프트 하나에서 뽑는 후보 수, 1부터 10,000까지</span></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="bon" aria-labelledby="bon-h">
+    <div class="ch-head"><div class="ch-num">01</div><div>
+      <h2 id="bon-h">Best-of-N이란?</h2>
+      <p class="ch-lede">LLM에게 답을 N개 받아 두고, 채점 모델이 가장 높게 평가한 하나를 고르는 방법입니다.</p>
+    </div></div>
+    <div class="body">
+      <p>모델을 다시 학습시키지 않고도 추론 시점에 계산을 더 써서 답의 품질을 올릴 수 있어, 가장 간단하면서도 널리 쓰이는 정렬 방법입니다. 채점은 사람 대신 사람의 선호를 학습한 <b>보상 모델(Reward Model)</b>이 합니다.</p>
+      <div class="formula">y<sub>1</sub>, …, y<sub>N</sub> ~ π<sub>ref</sub>(· | x) &nbsp;→&nbsp; ŷ = argmax<sub>i</sub> r̂(x, y<sub>i</sub>)</div>
+      <figure>
+        <img src="figures/bon/bon-flow.png" alt="프롬프트 x를 LLM에 넣어 응답 y1부터 yN까지 N개를 만들고, 보상 모델이 각각 점수를 매겨 가장 높은 점수의 응답을 최종 답으로 고르는 흐름도." loading="lazy">
+        <figcaption>① 응답 N개를 샘플링하고, ② 보상 모델(proxy RM)로 점수를 매긴 뒤, ③ 가장 높은 점수의 응답을 고릅니다.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="chapter" id="problem" aria-labelledby="problem-h">
+    <div class="ch-head"><div class="ch-num">02</div><div>
+      <h2 id="problem-h">문제: 채점 모델의 점수만 오른다</h2>
+      <p class="ch-lede">보상 모델은 사람의 판단을 흉내 낸 대리 지표(proxy)일 뿐이라서, 틀리는 지점이 있습니다.</p>
+    </div></div>
+    <div class="body">
+      <div class="split">
+        <div>
+          <p>N을 키울수록 선택은 점점 보상 모델이 <b>과대평가한 답</b>을 골라내게 됩니다. 그래서 보상 모델의 점수는 계속 오르는데, 실제 품질은 멈추거나 오히려 떨어질 수 있습니다.</p>
+          <div class="callout"><b>보상 과최적화</b> — 대리 지표(proxy)는 계속 좋아지는데 진짜 목표(gold)는 따라오지 않는 현상입니다.</div>
+          <p>오른쪽 실험에서도 보상 점수는 N = 1,024까지 꾸준히 오르지만, 실제 정답률은 N = 16 무렵부터 거의 늘지 않습니다.</p>
+        </div>
+        <figure>
+          <img src="figures/bon/math-prm-vanilla.jpg" alt="MATH에서 vanilla BoN의 결과. 왼쪽 정답률은 N=16 이후 약 86~87%에서 평평해지고, 오른쪽 보상 점수는 0.59에서 0.97까지 계속 오른다." loading="lazy">
+          <figcaption>MATH 수학 문제 256개, Qwen2.5-Math-PRM-7B를 보상 모델로 사용. <b>왼쪽</b> 실제 정답률(gold), <b>오른쪽</b> 보상 모델 점수(proxy).</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="chapter" id="methods" aria-labelledby="methods-h">
+    <div class="ch-head"><div class="ch-num">03</div><div>
+      <h2 id="methods-h">해결 방법: 고르는 규칙을 바꾸기</h2>
+      <p class="ch-lede">최근 논문들은 학습 없이 "고르는 규칙"만 바꿔서 과최적화를 막는 방법을 제안했습니다. 하지만 서로 비교된 적은 없었습니다.</p>
+    </div></div>
+    <div class="body">
+      <figure>
+        <img src="figures/bon/bon-methods.png" alt="같은 8개 후보에 네 가지 선택 규칙을 적용한 예시. BoN은 최고점을, MBR-BoN은 점수와 다른 후보와의 유사도 합이 가장 큰 것을, χ²-BoN은 기준선 λ를 넘는 후보를 순서대로 확률적으로 수락하고, EM-BoN은 상위 두 개 중 하나를 무작위로 고른다." loading="lazy">
+        <figcaption>같은 후보 8개(막대 높이 = 보상 점수)에 네 가지 규칙을 적용했을 때 무엇이 선택되는지 보여주는 예시입니다. 빨간색이 최종 선택입니다.</figcaption>
+      </figure>
+      <div class="methods">
+        <article class="method base">
+          <span class="tag">기준</span>
+          <h3>Vanilla BoN</h3>
+          <div class="rule">점수가 가장 높은 1개</div>
+          <p>보상 모델을 그대로 믿습니다. N을 잘 맞추면 최적이지만, N이 너무 크면 과최적화가 생길 수 있습니다.</p>
+        </article>
+        <article class="method">
+          <span class="tag">Jinnai et al.</span>
+          <h3>MBR-BoN</h3>
+          <div class="rule">점수 + β × 다른 답들과의 평균 유사도</div>
+          <p>다른 답들과 동떨어진 "튀는 답"에 벌점을 줍니다. 보상 모델은 흔한 답 근처에서 더 믿을 만하다는 생각입니다.</p>
+        </article>
+        <article class="method">
+          <span class="tag">Huang et al.</span>
+          <h3>χ²-BoN</h3>
+          <div class="rule">기준선 λ를 넘은 만큼에 비례하는 확률로 선택</div>
+          <p>지나치게 높은 점수를 의심합니다. N을 늘려도 성능이 떨어지지 않는다는 것이 이론적으로 증명되었습니다.</p>
+        </article>
+        <article class="method">
+          <span class="tag">Sriraman &amp; Block</span>
+          <h3>E<sub>M</sub>-BoN</h3>
+          <div class="rule">상위 ⌈N/M⌉개 중 무작위로 1개</div>
+          <p>점수 분포의 극단적인 꼬리를 피합니다. N에 대해 성능이 줄지 않는다는 것이 증명되었고, N ≤ M이면 Vanilla BoN과 같습니다.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="chapter" id="setup" aria-labelledby="setup-h">
+    <div class="ch-head"><div class="ch-num">04</div><div>
+      <h2 id="setup-h">실험: 모두 같은 조건에서</h2>
+      <p class="ch-lede">모든 방법이 같은 후보 응답 풀에서 고르도록 해서, 차이가 오직 "고르는 규칙"에서만 나오게 했습니다.</p>
+    </div></div>
+    <div class="body">
+      <div class="pipeline">
+        <div class="step"><h3>응답 생성</h3><p>vLLM으로 프롬프트마다 응답을 대량 생성해 저장. GPU 2장 병렬, 중단되면 이어서 생성</p></div>
+        <div class="step"><h3>보상 채점</h3><p>보상 모델(proxy)로 모든 응답에 점수를 한 번만 매기고 캐싱</p></div>
+        <div class="step"><h3>응답 선택</h3><p>같은 후보 묶음에 4가지 규칙을 적용. N = 1부터 10,000까지, 5개 seed 반복</p></div>
+        <div class="step"><h3>실제 품질 평가</h3><p>고른 응답을 GPT-4o-mini 심판으로 평가하고 그래프로 정리</p></div>
+      </div>
+      <table class="setup">
+        <tbody>
+          <tr><th>데이터셋</th><td>AlpacaEval 128문제(일반 지시 수행), MATH 256문제(수학)</td></tr>
+          <tr><th>응답 생성 모델</th><td>Qwen2.5-1.5B-Instruct, Qwen2.5-Math-1.5B-Instruct</td></tr>
+          <tr><th>보상 모델 (proxy)</th><td>OASST RM (Pythia-1.4B, 약한 보상 모델), Qwen2.5-Math-PRM-7B (강한 수학 전용 보상 모델)</td></tr>
+          <tr><th>실제 품질 (gold)</th><td>AlpacaEval: GPT-4o-mini가 판정한 승률 · MATH: Math-Verify로 확인한 정답률</td></tr>
+          <tr><th>실행 환경</th><td>Ubuntu 22.04, NVIDIA Quadro RTX 8000 (48GB) × 2</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="chapter" id="results" aria-labelledby="results-h">
+    <div class="ch-head"><div class="ch-num">05</div><div>
+      <h2 id="results-h">결과: AlpacaEval, 약한 보상 모델</h2>
+      <p class="ch-lede">N이 커질수록 보상 점수는 계속 오르지만, 실제 승률은 일찍 멈춥니다. 방법마다 그 모양이 다릅니다.</p>
+    </div></div>
+    <div class="body">
+      <figure>
+        <img src="figures/bon/alpacaeval-scaling.png" alt="AlpacaEval에서 네 가지 방법의 결과. 왼쪽 실제 승률은 N=1에서 약 50%로 시작해 80~89%에서 평평해지며 MBR-BoN이 가장 높다. 오른쪽 보상 점수는 Vanilla BoN과 MBR-BoN은 계속 오르고 EM-BoN과 ITP는 N=256 이후 평평해진다." loading="lazy">
+        <figcaption><b>왼쪽</b> GPT-4o-mini가 판정한 실제 승률(%), <b>오른쪽</b> 보상 모델(OASST) 점수. 가로축 N은 로그 스케일이며 마지막 점이 N = 10,000입니다. 그래프의 ITP는 χ²-BoN, EM-BoN은 E<sub>M</sub>-BoN입니다.</figcaption>
+      </figure>
+      <div class="findings">
+        <div class="finding">
+          <div class="who">Vanilla BoN</div>
+          <h3>점수는 계속 오르는데 승률은 멈춤</h3>
+          <p>보상 점수는 −1.8에서 8.0까지 계속 오르지만, 승률은 약 50%에서 시작해 N = 2<sup>6</sup> 무렵 80%에 이른 뒤 84% 근처에서 거의 멈춥니다.</p>
+        </div>
+        <div class="finding">
+          <div class="who">MBR-BoN</div>
+          <h3>점수는 더 낮은데 승률은 가장 높음</h3>
+          <p>N ≥ 2<sup>6</sup>부터 Vanilla BoN보다 승률이 약 3~6%p 높습니다. 보상 점수가 더 낮은데도 그렇다는 것은, 상위권에서 보상 모델과 심판의 판단이 갈린다는 뜻입니다.</p>
+        </div>
+        <div class="finding">
+          <div class="who">E<sub>M</sub>-BoN · χ²-BoN</div>
+          <h3>보상 점수의 폭주를 멈춤</h3>
+          <p>N = 2<sup>8</sup> 이후 보상 점수가 각각 약 5.9, 5.3에서 평평해져, 설계대로 극단적인 답을 피합니다. 승률은 Vanilla BoN과 비슷한 수준입니다.</p>
+        </div>
+      </div>
+      <p class="note">음영은 반복 실험의 불확실성 범위입니다. 방법 간 차이가 통계적으로 유의한지는 추가 검정으로 확인하고 있습니다.</p>
+    </div>
+  </section>
+
+  <section class="chapter" id="takeaway" aria-labelledby="takeaway-h">
+    <div class="ch-head"><div class="ch-num">06</div><div>
+      <h2 id="takeaway-h">정리</h2>
+      <p class="ch-lede">무엇을 알게 되었고, 다음에 무엇을 확인할 것인가.</p>
+    </div></div>
+    <div class="body">
+      <div class="takeaways">
+        <div class="takeaway"><div class="dot">1</div><p><b>보상 점수가 오르는 것만으로는 좋아졌다고 말할 수 없습니다.</b> 두 실험 모두 보상 점수는 끝까지 오르지만 실제 품질은 일찍 멈췄습니다. 항상 별도의 실제 품질 지표로 확인해야 합니다.</p></div>
+        <div class="takeaway"><div class="dot">2</div><p><b>약한 보상 모델에서는 고르는 규칙이 결과를 바꿉니다.</b> 같은 후보 풀에서도 MBR-BoN이 가장 높은 승률을 냈고, E<sub>M</sub>-BoN과 χ²-BoN은 보상 점수의 폭주를 막았습니다.</p></div>
+        <div class="takeaway"><div class="dot">3</div><p><b>다음 단계</b>는 MATH에서 정규화 방법들과 약한·강한 보상 모델을 함께 비교해, "보상 모델이 좋을수록 정규화의 필요가 줄어드는가"를 확인하는 것입니다.</p></div>
+      </div>
+      <h3 style="margin:40px 0 0; font-size:20px;">사용 기술</h3>
+      <div class="chips">
+        <span class="chip">Python</span><span class="chip">PyTorch</span><span class="chip">vLLM</span><span class="chip">Hugging Face Transformers</span><span class="chip">Sentence-Transformers</span><span class="chip">OpenAI API</span><span class="chip">Math-Verify</span><span class="chip">Ubuntu · RTX 8000 × 2</span>
+      </div>
+      <div class="more">
+        <a class="btn primary" href="bon.html">자세한 연구 리포트 보기 (영문)</a>
+        <a class="btn" href="index.html">홈페이지로</a>
+      </div>
+    </div>
+  </section>
+</main>
+<footer><div class="wrap">© 2026 전창민 · 서경대학교 전자컴퓨터공학과 졸업작품</div></footer>
+</body>
+</html>
