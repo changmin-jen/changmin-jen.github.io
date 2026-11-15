@@ -83,6 +83,17 @@ figcaption { margin-top:12px; font-size:15px; color:var(--muted); line-height:1.
 .method p { margin:0; font-size:15.5px; line-height:1.65; color:var(--muted); }
 .method .tag { font-size:13px; font-weight:700; color:var(--accent); }
 .method.base { background:var(--soft); }
+.method { cursor:pointer; transition:border-color .15s, box-shadow .15s; }
+.method:hover { border-color:var(--accent); }
+.method.on { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent) inset; }
+.more-btn { margin-top:auto; align-self:flex-start; font:inherit; font-size:15px; font-weight:700; color:var(--accent); background:none; border:1px solid var(--accent); border-radius:6px; padding:8px 14px; min-height:40px; cursor:pointer; }
+.more-btn:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+.method.on .more-btn { background:var(--accent); color:#fff; }
+.hint { font-size:14px; color:var(--muted); margin:14px 0 0; }
+.alg { margin-top:18px; border:1px solid var(--accent); border-radius:10px; padding:24px 28px; background:var(--accent-soft); }
+.alg h3 { margin:0 0 12px; font-size:22px; font-weight:900; }
+.alg ol { margin:0; padding-left:24px; display:grid; gap:8px; font-size:17px; }
+.alg-note { margin:16px 0 0; font-size:15.5px; color:var(--muted); max-width:52em; }
 
 /* Pipeline */
 .pipeline { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin:28px 0; counter-reset:step; }
@@ -213,30 +224,76 @@ footer { border-top:1px solid var(--line); padding:28px 0 40px; color:var(--mute
         <figcaption>같은 후보 8개(막대 높이 = 보상 점수)에 네 가지 규칙을 적용했을 때 무엇이 선택되는지 보여주는 예시입니다. 빨간색이 최종 선택입니다.</figcaption>
       </figure>
       <div class="methods">
-        <article class="method base">
+        <article class="method base" data-alg="bon">
           <span class="tag">기준</span>
           <h3>Vanilla BoN</h3>
           <div class="rule">점수가 가장 높은 1개</div>
           <p>보상 모델을 그대로 믿습니다. N을 잘 맞추면 최적이지만, N이 너무 크면 과최적화가 생길 수 있습니다.</p>
+          <button class="more-btn" type="button" aria-expanded="false" aria-controls="alg-bon">알고리즘 보기</button>
         </article>
-        <article class="method">
+        <article class="method " data-alg="mbr">
           <span class="tag">Jinnai et al.</span>
           <h3>MBR-BoN</h3>
           <div class="rule">점수 + β × 다른 답들과의 평균 유사도</div>
           <p>다른 답들과 동떨어진 "튀는 답"에 벌점을 줍니다. 보상 모델은 흔한 답 근처에서 더 믿을 만하다는 생각입니다.</p>
+          <button class="more-btn" type="button" aria-expanded="false" aria-controls="alg-mbr">알고리즘 보기</button>
         </article>
-        <article class="method">
+        <article class="method " data-alg="chi">
           <span class="tag">Huang et al.</span>
           <h3>χ²-BoN</h3>
           <div class="rule">기준선 λ를 넘은 만큼에 비례하는 확률로 선택</div>
           <p>지나치게 높은 점수를 의심합니다. N을 늘려도 성능이 떨어지지 않는다는 것이 이론적으로 증명되었습니다.</p>
+          <button class="more-btn" type="button" aria-expanded="false" aria-controls="alg-chi">알고리즘 보기</button>
         </article>
-        <article class="method">
+        <article class="method " data-alg="em">
           <span class="tag">Sriraman &amp; Block</span>
           <h3>E<sub>M</sub>-BoN</h3>
           <div class="rule">상위 ⌈N/M⌉개 중 무작위로 1개</div>
           <p>점수 분포의 극단적인 꼬리를 피합니다. N에 대해 성능이 줄지 않는다는 것이 증명되었고, N ≤ M이면 Vanilla BoN과 같습니다.</p>
+          <button class="more-btn" type="button" aria-expanded="false" aria-controls="alg-em">알고리즘 보기</button>
         </article>
+      </div>
+      <p class="hint">카드를 누르면 각 방법의 알고리즘이 아래에 펼쳐집니다.</p>
+      <div class="alg" id="alg-bon" hidden>
+        <h3>Vanilla BoN 알고리즘</h3>
+        <ol>
+          <li><b>입력:</b> 기준 모델 π<sub>ref</sub>, 보상 모델 r̂, 프롬프트 x, 후보 수 N</li>
+          <li>π<sub>ref</sub>에서 응답 y<sub>1</sub>, …, y<sub>N</sub>을 뽑습니다.</li>
+          <li>각 응답의 점수 r̂(x, y<sub>i</sub>)를 계산합니다.</li>
+          <li>점수가 가장 높은 응답 ŷ = argmax<sub>i</sub> r̂(x, y<sub>i</sub>)를 반환합니다.</li>
+        </ol>
+        <p class="alg-note">N = 1이면 π<sub>ref</sub>에서 뽑은 응답 하나를 그대로 반환합니다. 응답 생성과 채점 외에 추가 계산이 없습니다.</p>
+      </div>
+      <div class="alg" id="alg-mbr" hidden>
+        <h3>MBR-BoN 알고리즘</h3>
+        <ol>
+          <li><b>입력:</b> π<sub>ref</sub>, 보상 모델 r̂, 문장 유사도 sim, 프롬프트 x, 후보 수 N, 강도 β</li>
+          <li>π<sub>ref</sub>에서 응답 y<sub>1</sub>, …, y<sub>N</sub>을 뽑습니다.</li>
+          <li>각 응답 i마다 점수 s<sub>i</sub> = r̂(x, y<sub>i</sub>) + β · (1/N) Σ<sub>j</sub> sim(y<sub>i</sub>, y<sub>j</sub>)를 계산합니다.</li>
+          <li>s<sub>i</sub>가 가장 큰 응답을 반환합니다.</li>
+        </ol>
+        <p class="alg-note">이 실험에서 sim은 all-mpnet-base-v2 문장 임베딩의 코사인 유사도입니다. β = 0이면 Vanilla BoN과 같고, β가 아주 크면 보상은 무시하고 다른 답들의 한가운데에 있는 답을 고릅니다. 응답 쌍마다 유사도를 구하므로 N²번 계산이 필요합니다.</p>
+      </div>
+      <div class="alg" id="alg-chi" hidden>
+        <h3>χ²-BoN 알고리즘 (거절 샘플링)</h3>
+        <ol>
+          <li><b>입력:</b> π<sub>ref</sub>, 보상 모델 r̂, 프롬프트 x, 후보 수 N, 강도 β</li>
+          <li>π<sub>ref</sub>에서 응답 y<sub>1</sub>, …, y<sub>N</sub>을 뽑습니다.</li>
+          <li>가중치 w(y) = max(0, r̂(x, y) − λ) / β를 정합니다. 기준선 λ는 w의 평균이 1이 되도록 N개 샘플로 추정하고, w의 상한을 B라고 둡니다.</li>
+          <li>i = 1부터 N까지 차례로, 확률 min(w(y<sub>i</sub>) / B, 1)로 y<sub>i</sub>를 수락합니다. 처음 수락된 응답을 반환합니다.</li>
+          <li>하나도 수락되지 않으면 Vanilla BoN의 결과(점수 최고 응답)를 반환합니다.</li>
+        </ol>
+        <p class="alg-note">원 논문은 5단계에서 π<sub>ref</sub>의 새 샘플을 반환하지만, 이 실험에서는 Vanilla BoN으로 대신했습니다. β가 클수록 λ가 낮아져 더 많은 후보가 살아남고 π<sub>ref</sub> 쪽으로 끌려가며, β가 0에 가까우면 상위 후보만 남아 Vanilla BoN에 가까워집니다.</p>
+      </div>
+      <div class="alg" id="alg-em" hidden>
+        <h3>E<sub>M</sub>-BoN 알고리즘</h3>
+        <ol>
+          <li><b>입력:</b> π<sub>ref</sub>, 보상 모델 r̂, 프롬프트 x, 후보 수 N, 정규화 강도 M ≥ 1</li>
+          <li>π<sub>ref</sub>에서 응답 y<sub>1</sub>, …, y<sub>N</sub>을 뽑습니다.</li>
+          <li>점수 r̂ 기준 상위 k = ⌈N/M⌉개만 남깁니다.</li>
+          <li>남은 k개 중 하나를 균등한 확률로 무작위 선택해 반환합니다.</li>
+        </ol>
+        <p class="alg-note">N ≤ M이면 k = 1이라 Vanilla BoN과 똑같습니다. 그래서 결과 그래프에서 E<sub>M</sub>-BoN(M = 256)은 N = 2<sup>8</sup>까지 Vanilla BoN과 같은 선을 그립니다. M = 1이면 π<sub>ref</sub>에서 무작위로 하나를 고르는 것과 같습니다.</p>
       </div>
     </div>
   </section>
@@ -319,5 +376,23 @@ footer { border-top:1px solid var(--line); padding:28px 0 40px; color:var(--mute
   </section>
 </main>
 <footer><div class="wrap">© 2026 전창민 · 서경대학교 전자컴퓨터공학과 졸업작품</div></footer>
+<script>
+{
+  const cards = document.querySelectorAll('.method[data-alg]');
+  const show = (key) => {
+    cards.forEach(c => {
+      const on = c.dataset.alg === key;
+      c.classList.toggle('on', on);
+      const b = c.querySelector('.more-btn');
+      b.setAttribute('aria-expanded', on ? 'true' : 'false');
+      b.textContent = on ? '알고리즘 닫기' : '알고리즘 보기';
+      document.getElementById('alg-' + c.dataset.alg).hidden = !on;
+    });
+  };
+  cards.forEach(c => c.addEventListener('click', () => {
+    show(c.classList.contains('on') ? null : c.dataset.alg);
+  }));
+}
+</script>
 </body>
 </html>
