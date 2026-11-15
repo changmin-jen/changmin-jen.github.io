@@ -36,10 +36,21 @@ h1 { margin:0 0 18px; font-size:42px; line-height:1.22; font-weight:900; letter-
 .sub { margin:0 0 24px; font-size:21px; line-height:1.6; color:var(--muted); max-width:30em; }
 .byline { display:flex; gap:10px 22px; flex-wrap:wrap; font-size:16px; color:var(--muted); }
 .byline b { color:var(--ink); font-weight:700; }
-.stats { display:grid; gap:14px; }
-.stat { display:grid; grid-template-columns:auto 1fr; align-items:baseline; gap:18px; padding:20px 24px; background:var(--soft); border:1px solid var(--line); border-radius:10px; }
-.stat strong { font-size:40px; line-height:1; font-weight:900; color:var(--accent); font-variant-numeric:tabular-nums; white-space:nowrap; }
-.stat span { font-size:16px; color:var(--muted); line-height:1.5; }
+.glance { border:1px solid var(--line); border-radius:12px; padding:28px 28px 22px; background:var(--soft); }
+.g-head { margin:0 0 18px; font-size:17px; font-weight:700; }
+.g-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:6px 16px; align-items:baseline; padding:16px 0; border-top:1px solid var(--line); }
+.g-label { font-size:16px; color:var(--muted); }
+.g-label small { font-size:13px; }
+.g-nums { font-variant-numeric:tabular-nums; white-space:nowrap; font-size:22px; color:var(--muted); }
+.g-nums i { font-style:normal; margin:0 8px; font-size:18px; }
+.g-nums b { font-size:36px; font-weight:900; color:var(--ink); }
+.g-bar { grid-column:1 / -1; display:flex; height:10px; border-radius:999px; overflow:hidden; background:#e6e8f0; }
+.g-bar span { background:#b9bed6; }
+.g-bar span.up { background:var(--accent); }
+.g-delta { grid-column:1 / -1; font-size:15px; font-weight:700; color:var(--accent); }
+.g-delta.hot { color:var(--hot); }
+.g-row:first-of-type .g-bar span.up { background:var(--hot); }
+.g-foot { margin:12px 0 0; font-size:13px; color:var(--muted); }
 
 /* Chapters */
 .chapter { border-top:1px solid var(--line); padding:64px 0; }
@@ -136,14 +147,25 @@ footer { border-top:1px solid var(--line); padding:28px 0 40px; color:var(--mute
       <p class="eyebrow">2026 졸업작품 · 서경대학교 전자컴퓨터공학과</p>
       <h1 id="title">An Empirical Study of Reward Overoptimization Mitigation Strategies in Best-of-N</h1>
       <p class="sub">Best-of-N 추론 정렬에서 발생하는 <b>보상 과최적화(Reward Overoptimization)</b>와, 이를 막기 위해 제안된 방법들을 같은 조건에서 비교한 실험입니다.</p>
-      <div class="byline"><span><b>전창민</b></span><span>지도교수 <b>노석범</b></span></div>
+      <div class="byline"><span><b>전창민</b> 2021304073</span><span>지도교수 <b>노석범</b></span></div>
       <div class="more" style="margin-top:22px"><a class="btn primary" href="bon.html">자세히 보기 (영문 리포트)</a></div>
     </div>
-    <div class="stats" aria-label="실험 규모">
-      <div class="stat"><strong>128만</strong><span>vLLM으로 생성해 비교에 사용한 LLM 응답 수 (AlpacaEval)</span></div>
-      <div class="stat"><strong>4가지</strong><span>같은 후보 풀에서 비교한 응답 선택 방법</span></div>
-      <div class="stat"><strong>N = 10,000</strong><span>프롬프트 하나에서 뽑는 후보 수, 1부터 10,000까지</span></div>
-    </div>
+    <div class="glance" aria-label="핵심 결과 한눈에 보기">
+      <p class="g-head">N을 64 → 10,000으로 늘리면</p>
+      <div class="g-row">
+        <div class="g-label">보상 모델 점수 <small>(proxy)</small></div>
+        <div class="g-nums"><span>4.4</span><i>→</i><b>8.0</b></div>
+        <div class="g-bar"><span style="width:55%"></span><span class="up" style="width:45%"></span></div>
+        <div class="g-delta hot">약 1.8배 상승</div>
+      </div>
+      <div class="g-row">
+        <div class="g-label">실제 승률 <small>(gold)</small></div>
+        <div class="g-nums"><span>80%</span><i>→</i><b>83%</b></div>
+        <div class="g-bar"><span style="width:96%"></span><span class="up" style="width:4%"></span></div>
+        <div class="g-delta">약 3%p 상승</div>
+      </div>
+      <p class="g-foot">AlpacaEval 128문제 · Vanilla BoN · OASST 보상 모델 (그래프에서 읽은 근삿값)</p>
+</div>
   </section>
 
   <section class="chapter" id="bon" aria-labelledby="bon-h">
