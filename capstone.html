@@ -112,6 +112,10 @@ figcaption { margin-top:12px; font-size:15px; color:var(--muted); line-height:1.
 .finding h3 { margin:0 0 8px; font-size:20px; line-height:1.4; }
 .finding p { margin:0; font-size:15.5px; color:var(--muted); line-height:1.65; }
 .note { font-size:14px; color:var(--muted); margin-top:16px; }
+.res-h { margin:8px 0 0; font-size:24px; font-weight:900; }
+.res-h + figure { margin-top:16px; }
+.body figure + .res-h { margin-top:48px; }
+.fig-slot { margin-top:16px; min-height:260px; border:2px dashed var(--line); border-radius:8px; display:grid; place-items:center; color:var(--muted); font-size:16px; background:var(--soft); }
 
 .takeaways { display:grid; gap:14px; margin-top:8px; max-width:48em; }
 .takeaway { display:grid; grid-template-columns:36px minmax(0,1fr); gap:14px; align-items:start; }
@@ -324,32 +328,16 @@ footer { border-top:1px solid var(--line); padding:28px 0 40px; color:var(--mute
 
   <section class="chapter" id="results" aria-labelledby="results-h">
     <div class="ch-head"><div class="ch-num">05</div><div>
-      <h2 id="results-h">결과: AlpacaEval, 약한 보상 모델</h2>
-      <p class="ch-lede">N이 커질수록 보상 점수는 계속 오르지만, 실제 승률은 일찍 멈춥니다. 방법마다 그 모양이 다릅니다.</p>
+      <h2 id="results-h">주요 결과</h2>
     </div></div>
     <div class="body">
+      <h3 class="res-h">AlpacaEval</h3>
       <figure>
-        <img src="figures/bon/alpacaeval-scaling.png" alt="AlpacaEval에서 네 가지 방법의 결과. 왼쪽 실제 승률은 N=1에서 약 50%로 시작해 80~89%에서 평평해지며 MBR-BoN이 가장 높다. 오른쪽 보상 점수는 Vanilla BoN과 MBR-BoN은 계속 오르고 EM-BoN과 ITP는 N=256 이후 평평해진다." loading="lazy">
-        <figcaption><b>왼쪽</b> GPT-4o-mini가 판정한 실제 승률(%), <b>오른쪽</b> 보상 모델(OASST) 점수. 가로축 N은 로그 스케일이며 마지막 점이 N = 10,000입니다. 그래프의 ITP는 χ²-BoN, EM-BoN은 E<sub>M</sub>-BoN입니다.</figcaption>
+        <img src="figures/bon/alpacaeval-scaling.png" alt="AlpacaEval에서 네 가지 방법의 결과. 왼쪽은 N에 따른 GPT-4o-mini 승률, 오른쪽은 N에 따른 보상 모델(OASST) 점수." loading="lazy">
+        <figcaption><b>왼쪽</b> GPT-4o-mini가 판정한 실제 승률(%), <b>오른쪽</b> 보상 모델(OASST) 점수. 가로축 N은 로그 스케일이며 마지막 점이 N = 10,000입니다. 그래프의 ITP는 χ²-BoN, EM-BoN은 E<sub>M</sub>-BoN입니다. 각 점은 5 seed 반복의 평균이며, 음영은 표준오차(±1 SE)입니다.</figcaption>
       </figure>
-      <div class="findings">
-        <div class="finding">
-          <div class="who">Vanilla BoN</div>
-          <h3>점수는 계속 오르는데 승률은 멈춤</h3>
-          <p>보상 점수는 −1.8에서 8.0까지 계속 오르지만, 승률은 약 50%에서 시작해 N = 2<sup>6</sup> 무렵 80%에 이른 뒤 84% 근처에서 거의 멈춥니다.</p>
-        </div>
-        <div class="finding">
-          <div class="who">MBR-BoN</div>
-          <h3>점수는 더 낮은데 승률은 가장 높음</h3>
-          <p>N ≥ 2<sup>6</sup>부터 Vanilla BoN보다 승률이 약 3~6%p 높습니다. 보상 점수가 더 낮은데도 그렇다는 것은, 상위권에서 보상 모델과 심판의 판단이 갈린다는 뜻입니다.</p>
-        </div>
-        <div class="finding">
-          <div class="who">E<sub>M</sub>-BoN · χ²-BoN</div>
-          <h3>보상 점수의 폭주를 멈춤</h3>
-          <p>N = 2<sup>8</sup> 이후 보상 점수가 각각 약 5.9, 5.3에서 평평해져, 설계대로 극단적인 답을 피합니다. 승률은 Vanilla BoN과 비슷한 수준입니다.</p>
-        </div>
-      </div>
-      <p class="note">음영은 반복 실험의 불확실성 범위입니다. 방법 간 차이가 통계적으로 유의한지는 추가 검정으로 확인하고 있습니다.</p>
+      <h3 class="res-h">MATH</h3>
+      <div class="fig-slot">MATH 결과 그래프 자리 (4가지 방법, 5 seed)</div>
     </div>
   </section>
 
