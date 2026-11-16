@@ -307,15 +307,15 @@ footer { border-top:1px solid var(--line); padding:28px 0 40px; color:var(--mute
       <div class="pipeline">
         <div class="step"><h3>응답 생성</h3><p>vLLM으로 프롬프트마다 응답을 대량 생성해 저장. GPU 2장 병렬, 중단되면 이어서 생성</p></div>
         <div class="step"><h3>보상 채점</h3><p>보상 모델(proxy)로 모든 응답에 점수를 한 번만 매기고 캐싱</p></div>
-        <div class="step"><h3>응답 선택</h3><p>같은 후보 묶음에 4가지 규칙을 적용. N = 1부터 10,000까지, 5개 seed 반복</p></div>
-        <div class="step"><h3>실제 품질 평가</h3><p>고른 응답을 GPT-4o-mini 심판으로 평가하고 그래프로 정리</p></div>
+        <div class="step"><h3>응답 선택</h3><p>같은 후보 묶음에 4가지 규칙을 적용. 문항마다 응답 풀(AlpacaEval 10,000개, MATH 2,560개)을 무작위로 섞어 앞에서부터 N개를 뽑고, 섞는 순서를 바꿔 5번 반복</p></div>
+        <div class="step"><h3>실제 품질 평가</h3><p>AlpacaEval은 GPT-4o-mini 승률, MATH는 정답률로 평가하고 그래프로 정리</p></div>
       </div>
       <table class="setup">
         <tbody>
           <tr><th>데이터셋</th><td>AlpacaEval 128문제(일반 지시 수행), MATH 256문제(수학)</td></tr>
           <tr><th>응답 생성 모델</th><td>Qwen2.5-1.5B-Instruct, Qwen2.5-Math-1.5B-Instruct</td></tr>
           <tr><th>보상 모델 (proxy)</th><td>OASST RM (Pythia-1.4B, 약한 보상 모델), Qwen2.5-Math-PRM-7B (강한 수학 전용 보상 모델)</td></tr>
-          <tr><th>실제 품질 (gold)</th><td>AlpacaEval: GPT-4o-mini가 판정한 승률 · MATH: Math-Verify로 확인한 정답률</td></tr>
+          <tr><th>실제 품질 (gold)</th><td>AlpacaEval: 같은 모델의 기준 응답과 비교한 GPT-4o-mini 승률 · MATH: Math-Verify로 확인한 정답률</td></tr>
           <tr><th>실행 환경</th><td>Ubuntu 22.04, NVIDIA Quadro RTX 8000 (48GB) × 2</td></tr>
         </tbody>
       </table>
