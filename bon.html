@@ -264,7 +264,14 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
 
     <h4 id="r-sens">3.2.4 Hyperparameter sensitivity</h4>
     <p>Question: how fragile is each method to its knob? A method that wins only at one carefully tuned value is less useful than one that is stable across a wide range.</p>
-    <div class="pending"><p><b>Figure 4 goes here.</b> Final gold versus the knob (β or M) for each method.</p></div>
+    <figure>
+      <a href="figures/bon/tuning-alpacaeval.png" target="_blank" rel="noopener"><img src="figures/bon/tuning-alpacaeval.png" alt="Three panels for AlpacaEval: mean gold win rate across N versus M for E_M-BoN, versus β for ITP, and versus β for MBR-BoN, with the selected values 256, 0.001 and 50 starred." loading="lazy"></a>
+      <figcaption><b>Figure 4.</b> AlpacaEval hyperparameter sweep: mean gold win rate across seven N budgets versus M (E<sub>M</sub>-BoN) and β (ITP = χ²-BoN, MBR-BoN). Exploratory sweep on the 128 test prompts, replicate 0; shaded bands are ±1 question-level SE. Stars mark the selected values (M = 256, β = 0.001, β = 50).</figcaption>
+    </figure>
+    <figure>
+      <a href="figures/bon/tuning-math.png" target="_blank" rel="noopener"><img src="figures/bon/tuning-math.png" alt="Three panels for MATH: validation accuracy versus M for E_M-BoN, versus β for ITP, and versus β for MBR-BoN, with the selected values 64, 0.01 and 0 starred." loading="lazy"></a>
+      <figcaption><b>Figure 5.</b> MATH hyperparameter tuning: accuracy on 64 held-out validation problems at N = 256 versus M (E<sub>M</sub>-BoN) and β (ITP = χ²-BoN, MBR-BoN). Stars mark the selected values (M = 64, β = 0.01, β = 0), which are then fixed for every test N.</figcaption>
+    </figure>
   </section>
 
   <section id="discussion" aria-labelledby="discussion-h">

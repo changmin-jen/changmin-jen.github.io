@@ -369,6 +369,15 @@ footer { border-top:1px solid var(--line); padding:28px 0 40px; color:var(--mute
         </table>
       </div>
       <p class="tab-note">5 seed 반복의 평균 ± 표준오차(SE). 괄호는 최고값이 나온 N이며, 굵은 글씨는 열별 최고값, 밑줄은 두 번째 값입니다. MATH의 MBR-BoN은 β = 0이라 Vanilla BoN과 같습니다.</p>
+      <h3 class="res-h">하이퍼파라미터 튜닝</h3>
+      <figure>
+        <img src="figures/bon/tuning-alpacaeval.png" alt="AlpacaEval에서 E_M-BoN의 M, ITP의 β, MBR-BoN의 β에 따른 평균 승률. 선택된 값은 각각 256, 0.001, 50." loading="lazy">
+        <figcaption><b>AlpacaEval</b>: 정규화 강도에 따른 평균 승률(%, 7개 N에 대한 평균). 128문항에서 진행한 탐색적 sweep(단일 반복)이며, 별(★)이 선택된 값입니다(M = 256, ITP β = 0.001, MBR β = 50). 음영은 문항 간 ±1 SE입니다.</figcaption>
+      </figure>
+      <figure>
+        <img src="figures/bon/tuning-math.png" alt="MATH validation에서 E_M-BoN의 M, ITP의 β, MBR-BoN의 β에 따른 정답률. 선택된 값은 각각 64, 0.01, 0." loading="lazy">
+        <figcaption><b>MATH</b>: 평가 문항과 겹치지 않는 validation 64문항, N = 256에서 정규화 강도에 따른 정답률(%). 별(★)이 선택된 값이며(M = 64, ITP β = 0.01, MBR β = 0), 이 값을 모든 N에 고정해 위 결과를 얻었습니다.</figcaption>
+      </figure>
     </div>
   </section>
 
