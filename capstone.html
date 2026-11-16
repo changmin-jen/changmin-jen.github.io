@@ -307,7 +307,7 @@ footer { border-top:1px solid var(--line); padding:28px 0 40px; color:var(--mute
       <div class="pipeline">
         <div class="step"><h3>응답 생성</h3><p>vLLM으로 프롬프트마다 응답을 대량 생성해 저장. GPU 2장 병렬, 중단되면 이어서 생성</p></div>
         <div class="step"><h3>보상 채점</h3><p>보상 모델(proxy)로 모든 응답에 점수를 한 번만 매기고 캐싱</p></div>
-        <div class="step"><h3>응답 선택</h3><p>같은 후보 묶음에 4가지 규칙을 적용. 문항마다 응답 풀(AlpacaEval 10,000개, MATH 2,560개)을 무작위로 섞어 앞에서부터 N개를 뽑고, 섞는 순서를 바꿔 5번 반복</p></div>
+        <div class="step"><h3>응답 선택</h3><p>같은 후보 묶음에 4가지 규칙을 적용. Candidate pool에서 seed마다 무작위 샘플링, 5 seed 반복</p></div>
         <div class="step"><h3>실제 품질 평가</h3><p>AlpacaEval은 GPT-4o-mini 승률, MATH는 정답률로 평가하고 그래프로 정리</p></div>
       </div>
       <table class="setup">
