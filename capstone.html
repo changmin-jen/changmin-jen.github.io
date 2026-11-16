@@ -122,6 +122,7 @@ figcaption { margin-top:12px; font-size:15px; color:var(--muted); line-height:1.
 .restab tbody th { text-align:left; font-weight:700; }
 .restab td { text-align:right; }
 .restab td b { font-weight:900; color:var(--ink); }
+.restab td u { text-underline-offset:4px; text-decoration-thickness:2px; }
 .restab td small { color:var(--muted); font-size:13px; }
 .tab-note { margin:12px 0 0; font-size:14px; color:var(--muted); }
 .res-h + figure { margin-top:16px; }
@@ -361,13 +362,13 @@ footer { border-top:1px solid var(--line); padding:28px 0 40px; color:var(--mute
           </thead>
           <tbody>
 <tr><th scope="row">Vanilla BoN</th><td>84.06 ± 2.53 <small>(4,096)</small></td><td>84.06 ± 2.53</td><td><b>86.72 ± 1.98</b> <small>(1,024)</small></td><td><b>86.72 ± 1.98</b></td></tr>
-<tr><th scope="row">E<sub>M</sub>-BoN</th><td>84.38 ± 2.20 <small>(4,096)</small></td><td>84.38 ± 2.20</td><td>86.33 ± 1.98 <small>(1,024)</small></td><td>86.33 ± 1.98</td></tr>
+<tr><th scope="row">E<sub>M</sub>-BoN</th><td><u>84.38 ± 2.20</u> <small>(4,096)</small></td><td><u>84.38 ± 2.20</u></td><td><u>86.33 ± 1.98</u> <small>(1,024)</small></td><td><u>86.33 ± 1.98</u></td></tr>
 <tr><th scope="row">χ²-BoN (ITP)</th><td>81.80 ± 2.37 <small>(2,048)</small></td><td>81.56 ± 2.24</td><td>85.86 ± 1.93 <small>(256)</small></td><td>85.23 ± 1.98</td></tr>
 <tr><th scope="row">MBR-BoN</th><td><b>88.12 ± 2.21</b> <small>(4,096)</small></td><td><b>88.12 ± 2.21</b></td><td><b>86.72 ± 1.98</b> <small>(1,024)</small></td><td><b>86.72 ± 1.98</b></td></tr>
           </tbody>
         </table>
       </div>
-      <p class="tab-note">5 seed 반복의 평균 ± 표준오차(SE). 괄호는 최고값이 나온 N이며, 굵은 글씨는 열별 최고값입니다. MATH의 MBR-BoN은 β = 0이라 Vanilla BoN과 같습니다.</p>
+      <p class="tab-note">5 seed 반복의 평균 ± 표준오차(SE). 괄호는 최고값이 나온 N이며, 굵은 글씨는 열별 최고값, 밑줄은 두 번째 값입니다. MATH의 MBR-BoN은 β = 0이라 Vanilla BoN과 같습니다.</p>
     </div>
   </section>
 
