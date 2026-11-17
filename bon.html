@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="An empirical comparison of training-free reward-overoptimization mitigation methods for Best-of-N sampling (MBR-BoN, χ²-BoN, E_M-BoN) under one protocol.">
   <title>Reward Overoptimization in Best-of-N · Changmin Jeon</title>
-  <!-- DRAFT: search this file for class="tbd" and class="pending" and fill/remove them before publishing. -->
   <style>
 :root { --ink:#111; --muted:#626262; --accent:#444d87; --line:#ddd; --soft:#f6f7f9; --good:#2f6b3a; --warn:#8a5a12; }
 * { box-sizing:border-box; }
@@ -90,12 +89,11 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
     <p class="sub">When does regularization help? Evidence across reward model qualities</p>
     <p class="cite">A head-to-head comparison of MBR-BoN, χ²-BoN and E<sub>M</sub>-BoN against vanilla BoN.</p>
     <div class="links">
-      <span class="tbd">TBD: Code link</span>
       <a href="https://arxiv.org/abs/2404.01054" target="_blank" rel="noopener">MBR-BoN paper</a>
       <a href="https://arxiv.org/abs/2503.21878" target="_blank" rel="noopener">χ²-BoN paper</a>
       <a href="https://arxiv.org/abs/2603.05739" target="_blank" rel="noopener">E<sub>M</sub>-BoN paper</a>
     </div>
-    <p class="lede"><span class="label">Abstract.</span> Best-of-N (BoN) sampling returns the response that a proxy reward model scores highest among N samples. It is known to overoptimize: as N grows, the proxy score keeps rising while true quality stalls or falls. Recent papers propose several training-free fixes: a similarity regularizer (MBR-BoN), a χ²-pessimistic target (χ²-BoN), and top-quantile selection with an E<sub>M</sub>-divergence regularizer (E<sub>M</sub>-BoN). Each is evaluated against vanilla BoN under its own gold metric, reward model and range of N, so the methods have not been compared against each other. This project compares all three, plus vanilla BoN, under one protocol: a shared response pool, proxy reward models of weak to strong quality, one gold metric per task, and hyperparameters tuned on held-out prompts. It also tests two predictions of Sriraman &amp; Block's theory.</p>
+    <p class="lede"><span class="label">Abstract.</span> Best-of-N (BoN) sampling returns the response that a proxy reward model scores highest among N samples. It is known to overoptimize: as N grows, the proxy score keeps rising while true quality stalls or falls. Recent papers propose several training-free fixes: a similarity regularizer (MBR-BoN), a χ²-pessimistic target (χ²-BoN), and top-quantile selection with an E<sub>M</sub>-divergence regularizer (E<sub>M</sub>-BoN). Each is evaluated against vanilla BoN under its own gold metric, reward model and range of N, so the methods have not been compared against each other. This project compares all three, plus vanilla BoN, under one protocol: a shared response pool, a weak and a strong proxy reward model, and one gold metric per task. It also tests two predictions of Sriraman &amp; Block's theory.</p>
     <nav class="toc" aria-label="Contents">
       <a href="#intro">Introduction</a><a href="#background">Background</a><a href="#experiments">Experiments</a><a href="#discussion">Discussion</a><a href="#limits">Limitations</a><a href="#implementation">Implementation</a><a href="#references">References</a>
     </nav>
@@ -106,14 +104,14 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
     <p>Best-of-N sampling is the simplest way to spend inference-time compute on alignment. Draw N responses from a reference model π<sub>ref</sub>, score each with a proxy reward model r̂, and return the highest-scoring one: y<sub>1</sub>, …, y<sub>N</sub> ~ π<sub>ref</sub>(· | x) and ŷ = argmax<sub>i</sub> r̂(x, y<sub>i</sub>). It needs no training and works with black-box models. Its weakness is that r̂ is only a proxy for the true reward r<sup>⋆</sup>. The larger N is, the more the selected response is chosen for the places where r̂ is wrong, so the proxy score keeps climbing while true quality plateaus or declines (Figure 1). This is reward overoptimization (Gao et al., 2023).</p>
     <figure>
       <a href="figures/bon/math-prm-vanilla.jpg" target="_blank" rel="noopener"><img src="figures/bon/math-prm-vanilla.jpg" alt="Two line plots against N on a log scale up to 1,024 for vanilla BoN on MATH. Left: accuracy rises from about 71% at N=1 to about 86% at N=16, peaks near 87% at N=256 and ends near 86%. Right: the proxy reward rises steadily from about 0.59 to 0.97." loading="lazy"></a>
-      <figcaption><b>Figure 1.</b> Proxy and gold diverge as N grows. Vanilla BoN on MATH (256 test problems, policy Qwen2.5-Math-1.5B-Instruct) with the Qwen2.5-Math-PRM-7B proxy. Right: the proxy reward keeps rising, from about 0.59 at N = 1 to 0.97 at N = 1,024. Left: accuracy, the gold measure, rises from about 71% to 86% by N = 16, then flattens, peaking near 87% at N = 256 and slipping back to about 86%. Shaded bands: <span class="tbd">TBD: interval type</span>.</figcaption>
+      <figcaption><b>Figure 1.</b> Proxy and gold diverge as N grows. Vanilla BoN on MATH (256 test problems, policy Qwen2.5-Math-1.5B-Instruct) with the Qwen2.5-Math-PRM-7B proxy. Right: the proxy reward keeps rising, from about 0.59 at N = 1 to 0.97 at N = 1,024. Left: accuracy, the gold measure, rises from about 71% to 86% by N = 16, then flattens, peaking near 87% at N = 256 and slipping back to about 86%. Shaded bands: ±1 SE across problems.</figcaption>
     </figure>
     <p>One point matters for everything below: the proxy score rising with N is not evidence of overoptimization. The maximum of N draws grows with N whether or not the reward model is any good. Overoptimization is visible only against a gold measure that the selection never saw, so every experiment here reports gold and proxy side by side.</p>
     <p>Three recent papers propose training-free ways to mitigate this. Each is evaluated mostly against vanilla BoN, with its own gold metric (a gold reward model, an LLM-judged win-rate, or answer accuracy), its own proxy reward models and its own range of N.</p>
     <p>Comparisons across BoN variants do exist. Ichihara et al. (2025) compare regularized BoN variants (KL- and Wasserstein-distance-regularized selection, MBR decoding, and their own stochastic and length-regularized versions) by win-rate against vanilla BoN under a gold reward model, using 128 responses per prompt on AlpacaFarm and hh-rlhf. That study predates χ²-BoN and E<sub>M</sub>-BoN, though, and to my knowledge no study compares these latest strategies with one another or with the earlier regularizers under a single protocol. A practitioner's question, which method should I use and when, therefore has no direct answer. This project tries to give one. Its contributions are:</p>
     <ol class="contrib">
-      <li><b>One protocol for all methods.</b> The same candidate pool, the same proxy reward models, the same gold metrics, and hyperparameters tuned on held-out prompts for every method.</li>
-      <li><b>A proxy-quality axis.</b> Weak, mid and strong proxy reward models on the same task, so that “does regularization help?” can be answered as a function of how good the proxy is.</li>
+      <li><b>One protocol for all methods.</b> The same candidate pool, the same proxy reward model and the same gold metric for every method on a task, so the methods differ only in how they pick.</li>
+      <li><b>A weak and a strong proxy.</b> A small general-purpose reward model on AlpacaEval and a strong math-specific process reward model on MATH, so that “does regularization help?” can be read against how good the proxy is.</li>
       <li><b>Tests of theoretical predictions.</b> Whether vanilla BoN with a tuned N is already near-optimal for win-rate, and whether E<sub>M</sub>-BoN removes the decline at large N, as Sriraman &amp; Block predict (Section 2.7).</li>
     </ol>
   </section>
@@ -172,7 +170,7 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
         <li><b>for</b> i = 1 … N: accept y<sub>i</sub> with probability min{ w(y<sub>i</sub>) / B, 1 }; <b>return</b> the first accepted y<sub>i</sub>.</li>
         <li>If none is accepted, <b>return</b> y<sub>N+1</sub> (a plain π<sub>ref</sub> sample).</li>
       </ol>
-      <p class="note">A larger β lowers λ and keeps more candidates alive, which is a stronger pull toward π<sub>ref</sub>; as β → 0 only the top candidates survive and the rule approaches vanilla BoN. <b>This implementation</b> estimates λ and runs the rejection loop on the same N samples, and if nothing is accepted it falls back to vanilla BoN (argmax r̂) instead of a fresh π<sub>ref</sub> sample. <span class="tbd">TBD: fallback rate per N.</span></p>
+      <p class="note">A larger β lowers λ and keeps more candidates alive, which is a stronger pull toward π<sub>ref</sub>; as β → 0 only the top candidates survive and the rule approaches vanilla BoN. As in the paper’s own experiments, <b>this implementation</b> estimates λ and runs the rejection loop on the same N samples, with proxy scores mapped to [0, 1] so that B = (1 − λ)/β. It differs in one place: if nothing is accepted it falls back to vanilla BoN (argmax r̂) instead of a random π<sub>ref</sub> sample.</p>
     </div>
     <p><span class="label">Theoretical guarantee.</span> Huang et al. prove that this procedure, which they call InferenceTimePessimism, is optimal and scaling-monotonic: its performance does not degrade as N increases, under their assumptions on how well π<sub>ref</sub> covers good responses. Vanilla BoN carries no such guarantee and can degrade.</p>
 
@@ -208,59 +206,81 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
     <p>This section describes the setup shared by all methods (3.1) and then reports the results (3.2), which are read against the hypotheses H1–H4 of Section 2.7.</p>
     <h3 id="setup">3.1 Experimental setup</h3>
     <h4>3.1.1 Shared candidate pool</h4>
-    <p>For each prompt, a large pool of responses is generated once from π<sub>ref</sub>. Every method then selects from random size-N subsets of that pool, following Huang et al., so all methods see exactly the same candidates and differ only in how they pick. The pool holds <span class="tbd">TBD: pool size</span> responses per prompt, generated with vLLM, so that N ranges up to <span class="tbd">TBD</span> with <span class="tbd">TBD</span> independent subsets per N. <span class="tbd">TBD: sampling temperature and max length.</span></p>
+    <p>For each prompt, a large pool of responses is generated once from π<sub>ref</sub> with vLLM (FP16, temperature 1.0, top-p 1.0): 10,000 responses per prompt for AlpacaEval (1.28M in total, at most 512 new tokens) and 2,560 per prompt for MATH (655,360 in total, at most 1,536 new tokens). For each prompt and each of 5 seeds the pool is shuffled once and the first N responses are used, so the subsets are nested in N and all four methods see exactly the same candidates. N runs over {1, 4, 16, 64, 256, 512, 1,024, 2,048, 4,096, 8,192, 10,000} on AlpacaEval and up to 1,024 on MATH. At N = 10,000 the whole AlpacaEval pool is used in a fixed order. The 5 seeds therefore vary the candidate subset and the selection randomness over one fixed pool; they are not independent pools.</p>
 
     <h4>3.1.2 Tasks and gold metrics</h4>
     <div class="table-wrap">
       <table class="summary">
         <thead><tr><th>Task</th><th>Reference model π<sub>ref</sub></th><th>Prompts</th><th>Gold r<sup>⋆</sup></th></tr></thead>
         <tbody>
-          <tr><td>AlpacaEval</td><td>Qwen2.5-1.5B-Instruct</td><td>128</td><td>Win-rate of the selected response against reference responses sampled from π<sub>ref</sub>, judged by GPT-4o mini <span class="tbd">TBD: source and size of the reference set</span></td></tr>
-          <tr><td>MATH</td><td>Qwen2.5-Math-1.5B-Instruct</td><td><span class="tbd">TBD</span></td><td>Final-answer correctness, checked with Math-Verify</td></tr>
+          <tr><td>AlpacaEval</td><td>Qwen2.5-1.5B-Instruct</td><td>128</td><td>Pairwise win-rate of the selected response against one fixed response of the same policy (response index 0), judged by GPT-4o-mini with A/B order randomized (win 1, tie 0.5, loss 0). This is our own protocol, not the official AlpacaEval leaderboard.</td></tr>
+          <tr><td>MATH</td><td>Qwen2.5-Math-1.5B-Instruct</td><td>256 test (+ 64 validation)</td><td>Final-answer correctness, checked with Math-Verify</td></tr>
         </tbody>
       </table>
     </div>
     <p class="muted" style="font-size:13px"><b style="color:var(--ink)">Table 2.</b> Tasks and gold metrics. The two golds are different on purpose: a win-rate is the objective Sriraman &amp; Block analyze, while accuracy is the binary reward used by Huang et al.</p>
-    <p><span class="label">Why correctness and not reasoning quality for MATH.</span> Outcome accuracy is cheap, objective and cannot be argued with, which makes it the cleanest gold. Its blind spot is a correct answer reached through flawed reasoning, which process reward models are known to reward. Truncation and format failures are reported as a secondary check, and a small subset of solutions is audited by hand for reasoning quality. <span class="tbd">TBD: keep only if done.</span></p>
+    <p><span class="label">Why correctness and not reasoning quality for MATH.</span> Outcome accuracy is cheap, objective and cannot be argued with, which makes it the cleanest gold. Its blind spot is a correct answer reached through flawed reasoning, which process reward models are known to reward. Answers are extracted from the final boxed expression, and a failed extraction counts as wrong.</p>
 
     <h4>3.1.3 Proxy reward models</h4>
     <div class="table-wrap">
       <table class="summary">
         <thead><tr><th>Proxy</th><th>Role</th><th>Used on</th></tr></thead>
         <tbody>
-          <tr><td>OASST RM (Pythia-1.4B)</td><td>Weak, general-purpose: expected to be hackable on math</td><td>AlpacaEval, MATH</td></tr>
-          <tr><td>Mid-quality RM <span class="tbd">TBD: which model</span></td><td>Intermediate</td><td>MATH</td></tr>
-          <tr><td>Qwen2.5-Math-PRM-7B</td><td>Strong, math-specific process reward model <span class="tbd">TBD: how step scores are aggregated into one response score</span></td><td>MATH</td></tr>
+          <tr><td>OASST RM (Pythia-1.4B)</td><td>Weak, general-purpose. Raw scalar score, can be negative.</td><td>AlpacaEval</td></tr>
+          <tr><td>Qwen2.5-Math-PRM-7B</td><td>Strong, math-specific process reward model. A response’s score is the product of the step-level positive probabilities, r̂ = ∏<sub>t</sub> p<sub>t</sub> ∈ [0, 1].</td><td>MATH</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="muted" style="font-size:13px"><b style="color:var(--ink)">Table 3.</b> Proxy reward models. Each candidate proxy is screened on a small labelled subset (AUROC for correct vs. incorrect) before it is used. <span class="tbd">TBD: keep only if done.</span></p>
-    <p>The spread of proxies is the point of the second contribution. Huang et al. find that with the OASST proxy, BoN gains little on MATH and for some policies falls below π<sub>ref</sub>, while with stronger proxies BoN shows no visible hacking and does at least as well as their regularized method. A fair comparison therefore has to span the range, because a method can look good only because the proxy happened to be weak.</p>
+    <p class="muted" style="font-size:13px"><b style="color:var(--ink)">Table 3.</b> Proxy reward models used for selection.</p>
+    <p>The contrast between the two proxies is the point of the second contribution. Huang et al. find that with the OASST proxy, BoN gains little on MATH and for some policies falls below π<sub>ref</sub>, while with stronger proxies BoN shows no visible hacking and does at least as well as their regularized method. A method can look good only because the proxy happened to be weak, so both regimes are needed.</p>
 
     <h4>3.1.4 Method configuration</h4>
-    <p>MBR-BoN uses cosine similarity between <code>all-mpnet-base-v2</code> embeddings. Proxy scores are standardized before any scale-dependent knob (β in MBR-BoN and χ²-BoN) is applied, so that a given value means the same thing across reward models. Each method's hyperparameters are tuned on a dev split of prompts and every reported number comes from the remaining test prompts. <span class="tbd">TBD: grids for β and M.</span></p>
+    <p>MBR-BoN uses the cosine similarity of normalized <code>all-mpnet-base-v2</code> embeddings, including each response’s similarity to itself, added to the raw proxy score. For χ²-BoN, proxy scores are mapped to [0, 1]: OASST scores by a fixed affine map with clipping, PRM scores as they are. Hyperparameters were chosen differently on the two tasks.</p>
+    <ul>
+      <li><b>MATH:</b> tuned on 64 validation problems that share no ID or text with the 256 test problems, at N = 256, by mean Math-Verify accuracy (10 selection seeds for the stochastic methods; ties go to the weaker regularization). Grids: M ∈ {1, 2, 4, …, 256}; χ²-BoN β ∈ {10<sup>−4</sup>, 3·10<sup>−4</sup>, …, 1}; MBR-BoN β ∈ {0, 10<sup>−4</sup>, …, 20}. Selected: M = 64, β = 0.01, β = 0 (Figure 5). The validation set was split from the original test partition after some exploratory test runs, so it is not a fully untouched holdout.</li>
+      <li><b>AlpacaEval:</b> fixed from an exploratory sweep on the test prompts themselves (Figure 4): M = 256, β = 0.001, β = 50. AlpacaEval comparisons are therefore exploratory.</li>
+    </ul>
 
     <h4>3.1.5 Metrics</h4>
-    <p>For each method I plot gold against N, next to the proxy score for reference. Summary statistics are the <em>peak</em> gold over N, the <em>final</em> gold at the largest N, and the degradation Δ = peak − final, which measures overoptimization directly. Uncertainty comes from a paired prompt-level bootstrap, which compares methods on the same prompts and subsets rather than treating them as independent runs.</p>
+    <p>For each method I plot gold against N, next to the proxy score for reference. Summary statistics are the <em>peak</em> gold over N, the <em>final</em> gold at the largest N, and the degradation Δ = peak − final, which measures overoptimization directly. For each prompt the 5 seeds are averaged first; the reported value is the mean over prompts with a ±1 standard error across prompts (128 for AlpacaEval, 256 for MATH). The seeds are not counted as independent samples, and the SE is conditional on the fixed pool and the stored judgments.</p>
 
     <h3 id="results">3.2 Results</h3>
     <h4 id="r-scaling">3.2.1 Vanilla BoN scaling (AlpacaEval)</h4>
     <p>Question: as N grows, does the gold win-rate of vanilla BoN peak and fall while the proxy score keeps rising (H1)? The setting is 128 AlpacaEval prompts with the OASST reward model as the proxy.</p>
     <figure>
       <a href="figures/bon/alpacaeval-scaling.png" target="_blank" rel="noopener"><img src="figures/bon/alpacaeval-scaling.png" alt="Two line plots against N on a log scale for vanilla BoN, E_M-BoN, χ²-BoN and MBR-BoN on AlpacaEval. Left: gold win-rate rises from about 50% at N=1 to about 80–85% and flattens, with MBR-BoN highest. Right: proxy reward keeps rising for vanilla BoN and MBR-BoN, and flattens for E_M-BoN and χ²-BoN." loading="lazy"></a>
-      <figcaption><b>Figure 2.</b> AlpacaEval scaling with the OASST proxy (128 prompts, policy Qwen2.5-1.5B-Instruct). Left: gold win-rate (%) of the selected response against reference responses from π<sub>ref</sub>. Right: proxy reward. Both are plotted against N on a log scale; the last point is N = 10,000. Shaded bands: <span class="tbd">TBD: interval type</span>. In the legend, ITP is χ²-BoN and EM-BoN is E<sub>M</sub>-BoN. Method hyperparameters: <span class="tbd">TBD</span>.</figcaption>
+      <figcaption><b>Figure 2.</b> AlpacaEval scaling with the OASST proxy (128 prompts, policy Qwen2.5-1.5B-Instruct). Left: gold win-rate (%) of the selected response against a fixed response of π<sub>ref</sub>. Right: proxy reward (raw OASST score). Both are plotted against N on a log scale; the last point is N = 10,000. Each point averages 5 seeds per prompt; shaded bands are ±1 SE across the 128 prompts. In the legend, ITP is χ²-BoN and EM-BoN is E<sub>M</sub>-BoN. Hyperparameters: M = 256, χ²-BoN β = 0.001, MBR-BoN β = 50, from the exploratory sweep in Figure 4.</figcaption>
     </figure>
-    <p><b>Vanilla BoN.</b> Gold starts near 50% at N = 1, as it should when the selected response is a single draw from π<sub>ref</sub>. It climbs to about 80% by N = 2<sup>6</sup> and then creeps up to roughly 84% around N = 2<sup>12</sup>. Over the same range the proxy reward keeps rising, from about −2 to 8. So the proxy keeps improving while gold has nearly stopped, but I do not see a clear decline: gold at N = 10,000 is about 83%, inside the band of its peak. H1 is therefore only partly supported in this run. Gold saturates, it does not fall. For reference, the KL divergence of the BoN policy from π<sub>ref</sub>, log N − (N − 1)/N, is at most about 8.2 nats at N = 10,000.</p>
-    <p><b>Regularized methods.</b> E<sub>M</sub>-BoN and χ²-BoN flatten the proxy reward at about 5.9 and 5.3 beyond N ≈ 2<sup>8</sup>, which is the intended effect of holding the selection near π<sub>ref</sub>. Their gold curves track vanilla BoN up to about N = 2<sup>8</sup>. E<sub>M</sub>-BoN then sits roughly 1–3 points above vanilla for N between 2<sup>9</sup> and 2<sup>13</sup>, and χ²-BoN stays close to vanilla, about 2 points below it at N = 2<sup>11</sup>–2<sup>12</sup>. These gaps are small next to the bands, so I do not read them as a difference yet. MBR-BoN is above vanilla at every N ≥ 2<sup>6</sup>, by roughly 3–6 points, while its proxy reward rises more slowly (about 7.2 against 8.0 at N = 10,000). That it reaches higher gold with a lower proxy score is what one would expect if the proxy and the judge disagree near the top of the ranking. The paired comparison in Section 3.2.2 is what quantifies this.</p>
-    <p><b>The last point.</b> At N = 10,000 every gold curve drops, E<sub>M</sub>-BoN and χ²-BoN by several points and vanilla BoN and MBR-BoN by about 1. A drop shared by all four methods at the one N that is not a power of two looks more like a pool-size or resampling effect than overoptimization. <span class="tbd">TBD: check the pool size and the bootstrap at N = 10,000 before reading anything into it.</span></p>
+    <p><b>Vanilla BoN.</b> Gold starts near 50% at N = 1, as it should when the selected response is a single draw from π<sub>ref</sub>. It climbs to about 80% by N = 2<sup>6</sup> and then creeps up to roughly 84% around N = 2<sup>12</sup>. Over the same range the proxy reward keeps rising, from about −2 to 8. So the proxy keeps improving while gold has nearly stopped. Between N = 4,096 and N = 10,000 gold moves from 84.06% to 82.81% while the mean proxy score rises from 7.42 to 7.95, but a 1.25-point dip inside a ±2.5-point SE is not a clear decline. H1 is therefore only partly supported in this run. Gold saturates, it does not fall. For reference, the KL divergence of the BoN policy from π<sub>ref</sub>, log N − (N − 1)/N, is at most about 8.2 nats at N = 10,000.</p>
+    <p><b>Regularized methods.</b> E<sub>M</sub>-BoN and χ²-BoN flatten the proxy reward at about 5.9 and 5.3 beyond N ≈ 2<sup>8</sup>, which is the intended effect of holding the selection near π<sub>ref</sub>. Their gold curves track vanilla BoN up to about N = 2<sup>8</sup>. E<sub>M</sub>-BoN then sits roughly 1–3 points above vanilla for N between 2<sup>9</sup> and 2<sup>13</sup>, and χ²-BoN stays close to vanilla, about 2 points below it at N = 2<sup>11</sup>–2<sup>12</sup>. These gaps are small next to the bands, so I do not read them as a difference yet. MBR-BoN is above vanilla at every N ≥ 2<sup>6</sup>, by roughly 3–6 points, while its proxy reward rises more slowly (about 7.2 against 8.0 at N = 10,000). That it reaches higher gold with a lower proxy score is what one would expect if the proxy and the judge disagree near the top of the ranking. Table 4 gives the numbers.</p>
+    <p><b>The last point.</b> At N = 10,000 every gold curve dips: vanilla BoN to 82.81%, E<sub>M</sub>-BoN to 81.17%, χ²-BoN to 80.47% and MBR-BoN to 88.28%. N = 10,000 is also the one budget that uses the whole pool in a fixed order, so every seed sees the same candidates and only the stochastic methods vary across seeds. The dip is therefore measured with less subset randomness than the other points, and I do not read it as evidence of overoptimization on its own.</p>
 
     <h4 id="r-compare">3.2.2 Method comparison</h4>
-    <p>Question: with hyperparameters tuned on the dev split, how do MBR-BoN, χ²-BoN and E<sub>M</sub>-BoN compare with BoN in peak gold, final gold and Δ (H2, H3)?</p>
-    <div class="pending"><p><b>Table 4 goes here.</b> Peak gold, final gold and Δ for each method, with paired-bootstrap confidence intervals. The gold-versus-N curves for all four methods are already in Figure 2 (left).</p><p><span class="tbd">TBD</span> state whether the hyperparameters in Figure 3 are the ones tuned on the dev split.</p></div>
+    <p>Question: how do MBR-BoN, χ²-BoN and E<sub>M</sub>-BoN compare with vanilla BoN in peak and final gold (H2, H3)?</p>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead>
+          <tr><th rowspan="2">Method</th><th colspan="3">AlpacaEval win rate (%)</th><th colspan="2">MATH accuracy (%)</th></tr>
+          <tr><th>Peak, N ≤ 4,096 (N)</th><th>N = 4,096</th><th>N = 10,000</th><th>Peak (N)</th><th>N = 1,024</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Vanilla BoN</td><td>84.06 ± 2.53 (4,096)</td><td>84.06 ± 2.53</td><td>82.81</td><td><b>86.72 ± 1.98</b> (1,024)</td><td><b>86.72 ± 1.98</b></td></tr>
+          <tr><td>E<sub>M</sub>-BoN</td><td>84.38 ± 2.20 (4,096)</td><td>84.38 ± 2.20</td><td>81.17</td><td>86.33 ± 1.98 (1,024)</td><td>86.33 ± 1.98</td></tr>
+          <tr><td>χ²-BoN</td><td>81.80 ± 2.37 (2,048)</td><td>81.56 ± 2.24</td><td>80.47</td><td>85.86 ± 1.93 (256)</td><td>85.23 ± 1.98</td></tr>
+          <tr><td>MBR-BoN</td><td><b>88.12 ± 2.21</b> (4,096)</td><td><b>88.12 ± 2.21</b></td><td><b>88.28</b></td><td><b>86.72 ± 1.98</b> (1,024)</td><td><b>86.72 ± 1.98</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" style="font-size:13px"><b style="color:var(--ink)">Table 4.</b> Mean ± 1 SE across prompts, 5 seeds. Bold marks the highest value in each column. On MATH, MBR-BoN was tuned to β = 0 and is identical to vanilla BoN.</p>
+    <p>Within the plotted ranges the degradation Δ = peak − final is zero for every method except χ²-BoN (0.24 points on AlpacaEval at N ≤ 4,096, 0.63 points on MATH). On AlpacaEval, MBR-BoN is about 4 points above vanilla BoN at N = 4,096, a gap of roughly 1.7 standard errors of either method; E<sub>M</sub>-BoN matches vanilla BoN (84.38 vs 84.06) while holding its proxy score near 5.9; χ²-BoN is about 2.5 points below. On MATH no method beats vanilla BoN. No paired significance test has been run, so these are descriptive differences.</p>
 
     <h4 id="r-proxy">3.2.3 Effect of proxy quality (MATH)</h4>
-    <p>Question: does the benefit of regularization shrink as the proxy gets stronger (H4)? MATH is evaluated with the OASST and Qwen2.5-Math-PRM-7B proxies.</p>
-    <div class="pending"><p><b>Figure 3 goes here.</b> Gold accuracy versus N on MATH for each proxy (OASST and Qwen2.5-Math-PRM-7B), per method.</p><p><span class="tbd">TBD</span> describe what the curves show for each proxy, and state plainly where no overoptimization is visible. A null result is still a result and it bears directly on H4.</p></div>
+    <p>Question: does the benefit of regularization shrink when the proxy is strong (H4)? MATH uses the Qwen2.5-Math-PRM-7B proxy with hyperparameters tuned on the validation set.</p>
+    <figure>
+      <a href="figures/bon/math-accuracy.png" target="_blank" rel="noopener"><img src="figures/bon/math-accuracy.png" alt="Two line plots against N up to 1,024 for the four methods on MATH. Left: accuracy rises from about 71.6% to 85–87% for all methods. Right: the PRM proxy keeps rising for vanilla BoN and flattens for E_M-BoN and ITP." loading="lazy"></a>
+      <figcaption><b>Figure 3.</b> MATH scaling with the Qwen2.5-Math-PRM-7B proxy (256 test problems, policy Qwen2.5-Math-1.5B-Instruct). Left: Math-Verify accuracy (%). Right: proxy reward. N on a log scale up to 1,024. Each point averages 5 seeds per problem; shaded bands are ±1 SE across problems. M = 64, χ²-BoN β = 0.01, MBR-BoN β = 0 (identical to vanilla BoN, so its line is hidden).</figcaption>
+    </figure>
+    <p>Accuracy rises from 71.56% at N = 1 to 86.72% at N = 1,024 for vanilla BoN, with no decline anywhere in the range, while the PRM score rises from about 0.64 to 0.96. E<sub>M</sub>-BoN and χ²-BoN hold the proxy near 0.92 and 0.90 from N ≈ 64 on, and end at 86.33% and 85.23%, within one SE of vanilla BoN. With this proxy there is no visible overoptimization for regularization to fix, which is the situation H4 describes. A comparison with the weak OASST proxy on the same MATH problems exists only as an earlier single-run experiment and is not shown here.</p>
 
     <h4 id="r-sens">3.2.4 Hyperparameter sensitivity</h4>
     <p>Question: how fragile is each method to its knob? A method that wins only at one carefully tuned value is less useful than one that is stable across a wide range.</p>
@@ -272,11 +292,19 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
       <a href="figures/bon/tuning-math.png" target="_blank" rel="noopener"><img src="figures/bon/tuning-math.png" alt="Three panels for MATH: validation accuracy versus M for E_M-BoN, versus β for ITP, and versus β for MBR-BoN, with the selected values 64, 0.01 and 0 starred." loading="lazy"></a>
       <figcaption><b>Figure 5.</b> MATH hyperparameter tuning: accuracy on 64 held-out validation problems at N = 256 versus M (E<sub>M</sub>-BoN) and β (ITP = χ²-BoN, MBR-BoN). Stars mark the selected values (M = 64, β = 0.01, β = 0), which are then fixed for every test N.</figcaption>
     </figure>
+    <p>On AlpacaEval the sweep peaks at the edge of the E<sub>M</sub> grid (M = 256) and at the smallest χ²-BoN β, so both selected values sit next to vanilla BoN; MBR-BoN peaks at an interior β = 50 and falls off on either side. On MATH, E<sub>M</sub>-BoN and χ²-BoN peak at interior values (M = 64, β = 0.01), while MBR-BoN is flat in β up to 10 and drops at 20, so the tie rule selects β = 0.</p>
+
+    <h4 id="r-metric">3.2.5 Changing the gold metric (in progress)</h4>
+    <p>To check whether these conclusions depend on the choice of gold, two more conditions are being run: AlpacaEval scored by a larger reward model (Skywork-Reward-Llama-3.1-8B) with hyperparameters re-tuned on 32 held-out prompts, and MATH scored by GPT-4o-mini pairwise win rate with hyperparameters re-tuned on the 64 validation problems. Both separate the effect of re-scoring the same selections from the effect of re-tuning. Results will be added when they finish.</p>
   </section>
 
   <section id="discussion" aria-labelledby="discussion-h">
     <h2 id="discussion-h">4. Discussion</h2>
-    <div class="pending"><p>To be written after the results. It should answer, in order: which hypotheses H1–H4 held, whether regularization bought a higher peak or only monotonicity, how the answer changes with proxy quality, and what that means for choosing a method in practice.</p></div>
+    <p><b>H1, vanilla BoN overoptimizes with a weak proxy: partly.</b> With the OASST proxy on AlpacaEval the proxy score keeps rising to N = 10,000 while gold win rate saturates near 84% from N ≈ 2<sup>12</sup>; the dip at N = 10,000 is within the noise. Gold stalls, but a clear peak-then-fall was not observed in this range.</p>
+    <p><b>H2, regularized methods do not decline: consistent but not tested.</b> E<sub>M</sub>-BoN and χ²-BoN stop the proxy score from climbing, as designed, and show no decline up to N = 4,096. Because vanilla BoN does not decline either, the monotonicity guarantee is not put under pressure here.</p>
+    <p><b>H3, tuned BoN is already near-optimal: largely supported among proxy-only methods.</b> E<sub>M</sub>-BoN matches vanilla BoN on both tasks while capping the proxy, which is what Sriraman &amp; Block predict: regularization buys stability, not a higher peak. MBR-BoN is the exception on AlpacaEval, about 4 points higher, but it also uses information the others do not (a separate embedding model), and its β came from an exploratory test sweep.</p>
+    <p><b>H4, a strong proxy leaves little to fix: supported.</b> With the math PRM, accuracy never declines, no regularized method beats vanilla BoN, and validation tuning chose β = 0 for MBR-BoN.</p>
+    <p><b>In practice.</b> With a strong, task-specific proxy, a well-chosen N for vanilla BoN is enough. With a weak, general-purpose proxy the selection rule matters: E<sub>M</sub>-BoN is a cheap way to keep vanilla-level quality without the proxy running away, and MBR-BoN is worth trying when an embedding model is available, pending a held-out re-tuning of its β.</p>
   </section>
 
   <section id="limits" aria-labelledby="limits-h">
@@ -286,13 +314,14 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
       <li><b>Small models and few prompts.</b> One 1.5B reference model per task, and 128 AlpacaEval prompts, so confidence intervals are wide and conclusions may not transfer to larger models.</li>
       <li><b>The gold is itself a measurement.</b> The AlpacaEval gold is an LLM judge with its own biases, and the MATH gold sees only final answers.</li>
       <li><b>Unequal tuning effort.</b> E<sub>M</sub>-BoN has a single knob (M), while MBR-BoN and χ²-BoN add a scale-dependent β and supporting machinery (an embedding model, a λ estimate, a rejection bound). Equal tuning budgets do not mean equal effort per method.</li>
+      <li><b>Exploratory AlpacaEval tuning and one fixed pool.</b> AlpacaEval hyperparameters were chosen on the test prompts, and the 5 seeds reuse one fixed response pool per prompt, so the reported SEs do not cover pool-to-pool variation.</li>
       <li><b>Hacking may not appear.</b> With a strong proxy there may be nothing to mitigate. In that case the honest finding is that the methods tie, not that one wins.</li>
     </ol>
   </section>
 
   <section id="implementation" aria-labelledby="impl-h">
     <h2 id="impl-h">Implementation approach</h2>
-    <p>Candidate responses are generated with vLLM and stored per prompt, so every method and every N reuses the same pool. Selection, bootstrapping and metrics run offline on the stored responses, and each proxy scores the pool only once because every method shares those scores. <span class="tbd">TBD: code link, hardware, and which method implementations were written from the papers versus reused.</span></p>
+    <p>Candidate responses are generated with vLLM and stored per prompt, so every method and every N reuses the same pool. Proxy scores and MBR embeddings are computed once and cached, and selection and evaluation run offline on the stored responses; repeated judge comparisons are cached and reused. All four selection rules were implemented from the papers’ descriptions. Generation and scoring ran on two NVIDIA Quadro RTX 8000 (48 GB) GPUs under Ubuntu 22.04, with prompts split across the two GPUs as independent processes that resume from where they stopped. Main libraries: PyTorch, Transformers, vLLM, Sentence-Transformers, Math-Verify and the OpenAI API.</p>
   </section>
 
   <section id="references" aria-labelledby="refs-h">
