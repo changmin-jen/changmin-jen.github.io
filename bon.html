@@ -146,7 +146,21 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
       <li><b>Distance from π<sub>ref</sub>.</b> The density ratio w := π/π<sub>ref</sub> says how much a policy over- or under-weights a response relative to π<sub>ref</sub>. Coverage C<sup>π</sup> := E<sub>π</sub>[w] measures how far π moves from π<sub>ref</sub>, and the E<sub>M</sub>-divergence E<sub>M</sub>(π ‖ π<sub>ref</sub>) := E<sub>π<sub>ref</sub></sub>[(w − M)<sub>+</sub>] is the mass of π above density ratio M.</li>
     </ul>
     <p>The prompt is fixed throughout, so x is often dropped from the notation.</p>
-    <h3>2.1 Best-of-N</h3>
+    <h3>2.1 Overview of the methods</h3>
+    <p>The report compares vanilla BoN with three regularized variants. All four share the same interface: draw N candidates from π<sub>ref</sub>, score them with r̂, and pick one. The variants differ from BoN only in what they change about the pick. Table 1 summarizes the four selection rules, and Sections 2.2–2.5 take them in turn. I use the names MBR-BoN, χ²-BoN and E<sub>M</sub>-BoN throughout. The original papers call the second one inference-time pessimism (ITP) and the third E<sub>M</sub>-regularized BoN.</p>
+    <div class="table-wrap">
+      <table class="summary methods">
+        <thead><tr><th>Method</th><th>Selection rule</th><th>Knob</th><th>What it guards against</th><th>Theory</th><th>Extra cost</th></tr></thead>
+        <tbody>
+          <tr><td>BoN</td><td>argmax<sub>i</sub> r̂(x, y<sub>i</sub>)</td><td>N</td><td>nothing</td><td>Prop. 1, Thm. 2–4</td><td>none</td></tr>
+          <tr><td>MBR-BoN<br><span class="muted" style="font-weight:400">Jinnai et al.</span></td><td>argmax<sub>i</sub> [ r̂<sub>i</sub> + β · (1/N) Σ<sub>j</sub> sim(y<sub>i</sub>, y<sub>j</sub>) ]</td><td>β</td><td>responses far from the other samples (proximity to π<sub>ref</sub>)</td><td>Prop. 5 (interpretation only, no guarantee)</td><td>N² pairwise similarities</td></tr>
+          <tr><td>χ²-BoN<br><span class="muted" style="font-weight:400">Huang et al.</span></td><td>sample from π<sub>ref</sub>(y|x) · max(0, r̂(x,y) − λ) / β by sequential rejection sampling</td><td>β</td><td>scores far above what typical samples reach</td><td>Thm. 6, Prop. 7</td><td>λ estimate, rejection loop</td></tr>
+          <tr><td>E<sub>M</sub>-BoN<br><span class="muted" style="font-weight:400">Sriraman &amp; Block</span></td><td>keep the top ⌈N/M⌉ by r̂, pick one uniformly</td><td>M</td><td>the extreme tail (provably monotone in N)</td><td>Lemma 8, Thm. 9, Prop. 10</td><td>none</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" style="font-size:13px"><b style="color:var(--ink)">Table 1.</b> The four selection rules compared. The Theory column points to the results stated in Sections 2.2–2.5.</p>
+    <h3>2.2 Best-of-N</h3>
     <p>Vanilla BoN is the baseline that every method below modifies. It draws N responses from π<sub>ref</sub> and returns the one with the highest proxy score:</p>
     <div class="eq"><div class="eqm"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msub><mover accent="true"><mi>y</mi><mo>^</mo></mover><mrow><mi mathvariant="normal">B</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">N</mi></mrow></msub><mo>=</mo><munder><mrow><mi mathvariant="normal">arg max</mi><mo>⁡</mo></mrow><mrow><mn>1</mn><mo>≤</mo><mi>i</mi><mo>≤</mo><mi>N</mi></mrow></munder><mtext> </mtext><mover accent="true"><mi>r</mi><mo>^</mo></mover><mo stretchy="false">(</mo><mi>x</mi><mo separator="true">,</mo><msub><mi>y</mi><mi>i</mi></msub><mo stretchy="false">)</mo><mo separator="true">,</mo><mspace width="2em"/><msub><mi>y</mi><mn>1</mn></msub><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msub><mi>y</mi><mi>N</mi></msub><mo><mover><mo><mo>∼</mo></mo><mtext>i.i.d.</mtext></mover></mo><msub><mi>π</mi><mrow><mi mathvariant="normal">r</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">f</mi></mrow></msub><mo stretchy="false">(</mo><mo>⋅</mo><mo>∣</mo><mi>x</mi><mo stretchy="false">)</mo></mrow></math></div><span class="eqn">(1)</span></div>
     <p>Its only knob is N, and a larger N moves the output further from π<sub>ref</sub>. That growing distance is what lets the selection exploit errors in r̂. The guarantees below use the notation defined at the start of this section.</p>
@@ -188,20 +202,6 @@ footer { border-top:1px solid var(--line); color:var(--muted); font-size:12px; p
       <p class="note">N = 1 returns a plain π<sub>ref</sub> sample. The cost is N generations and N reward evaluations, with nothing else to compute or tune.</p>
     </div>
 
-    <h3>2.2 The three regularized variants</h3>
-    <p>All three keep the BoN interface: draw N candidates from π<sub>ref</sub>, score them, and pick one. They differ in what they change about the pick. Table 1 summarizes their selection rules. I use the names MBR-BoN, χ²-BoN and E<sub>M</sub>-BoN throughout. The original papers call the second one inference-time pessimism (ITP) and the third E<sub>M</sub>-regularized BoN.</p>
-    <div class="table-wrap">
-      <table class="summary methods">
-        <thead><tr><th>Method</th><th>Selection rule</th><th>Knob</th><th>What it guards against</th><th>Theory</th><th>Extra cost</th></tr></thead>
-        <tbody>
-          <tr><td>BoN</td><td>argmax<sub>i</sub> r̂(x, y<sub>i</sub>)</td><td>N</td><td>nothing</td><td>Prop. 1, Thm. 2–4</td><td>none</td></tr>
-          <tr><td>MBR-BoN<br><span class="muted" style="font-weight:400">Jinnai et al.</span></td><td>argmax<sub>i</sub> [ r̂<sub>i</sub> + β · (1/N) Σ<sub>j</sub> sim(y<sub>i</sub>, y<sub>j</sub>) ]</td><td>β</td><td>responses far from the other samples (proximity to π<sub>ref</sub>)</td><td>Prop. 5 (interpretation only, no guarantee)</td><td>N² pairwise similarities</td></tr>
-          <tr><td>χ²-BoN<br><span class="muted" style="font-weight:400">Huang et al.</span></td><td>sample from π<sub>ref</sub>(y|x) · max(0, r̂(x,y) − λ) / β by sequential rejection sampling</td><td>β</td><td>scores far above what typical samples reach</td><td>Thm. 6, Prop. 7</td><td>λ estimate, rejection loop</td></tr>
-          <tr><td>E<sub>M</sub>-BoN<br><span class="muted" style="font-weight:400">Sriraman &amp; Block</span></td><td>keep the top ⌈N/M⌉ by r̂, pick one uniformly</td><td>M</td><td>the extreme tail (provably monotone in N)</td><td>Lemma 8, Thm. 9, Prop. 10</td><td>none</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="muted" style="font-size:13px"><b style="color:var(--ink)">Table 1.</b> The four selection rules compared. The Theory column points to the results stated in Sections 2.1–2.5.</p>
     <h3>2.3 MBR-BoN</h3>
     <p>MBR-BoN adds to each score the average similarity between that candidate and all the others, here the cosine similarity of sentence embeddings:</p>
     <div class="eq"><div class="eqm"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msub><mover accent="true"><mi>y</mi><mo>^</mo></mover><mrow><mi mathvariant="normal">M</mi><mi mathvariant="normal">B</mi><mi mathvariant="normal">R</mi></mrow></msub><mo>=</mo><munder><mrow><mi mathvariant="normal">arg max</mi><mo>⁡</mo></mrow><mrow><mn>1</mn><mo>≤</mo><mi>i</mi><mo>≤</mo><mi>N</mi></mrow></munder><mo fence="false" stretchy="true" minsize="1.8em" maxsize="1.8em">[</mo><mover accent="true"><mi>r</mi><mo>^</mo></mover><mo stretchy="false">(</mo><mi>x</mi><mo separator="true">,</mo><msub><mi>y</mi><mi>i</mi></msub><mo stretchy="false">)</mo><mo>+</mo><mi>β</mi><mo>⋅</mo><mfrac><mn>1</mn><mi>N</mi></mfrac><munderover><mo>∑</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></munderover><mrow><mi mathvariant="normal">s</mi><mi mathvariant="normal">i</mi><mi mathvariant="normal">m</mi></mrow><mo stretchy="false">(</mo><msub><mi>y</mi><mi>i</mi></msub><mo separator="true">,</mo><msub><mi>y</mi><mi>j</mi></msub><mo stretchy="false">)</mo><mo fence="false" stretchy="true" minsize="1.8em" maxsize="1.8em">]</mo></mrow></math></div><span class="eqn">(8)</span></div>
